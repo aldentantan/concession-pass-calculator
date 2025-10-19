@@ -1,0 +1,90 @@
+import { Alert, Box, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
+import React, { useState } from 'react';
+import { extractTripsFromPdf } from '../utils/pdfParser';
+import PassRecommendation from './PassRecommendation';
+import PdfUpload from './PdfUpload';
+import TripReview from './TripReview';
+
+import type { ParsedTrip } from '../types';
+
+export default function ConcessionAnalyzer(): React.JSX.Element {
+  const [activeStep, setActiveStep] = useState(0);
+  const [parsedTrips, setParsedTrips] = useState<ParsedTrip[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const steps = ['Upload PDF', 'Review Trips', 'Get Recommendation'];
+
+  const handleFileUpload = async (uploadedFile: File) => {
+    setFile(uploadedFile);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Parse PDF and extract trips
+      const trips = await extractTripsFromPdf(uploadedFile);
+
+      if (trips.length === 0) {
+        setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');
+        setLoading(false);
+        return;
+      }
+
+      setParsedTrips(trips);
+      setActiveStep(1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse PDF');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNext = () => {
+    setActiveStep((prev) => prev + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prev) => prev - 1);
+  };
+
+  return (
+    <Box sx={{ width: '100%', p: 4 }}>
+      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
+      {loading && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {!loading && activeStep === 0 && <PdfUpload onFileSelect={handleFileUpload} />}
+      {!loading && activeStep === 1 && (
+        <TripReview
+          trips={parsedTrips}
+          onNext={handleNext}
+          onBack={handleBack}
+          onTripsUpdate={setParsedTrips}
+        />
+      )}
+      {!loading && activeStep === 2 && (
+        <PassRecommendation
+          trips={parsedTrips}
+          onBack={handleBack}
+        />
+      )}
+    </Box>
+  );
+}

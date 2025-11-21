@@ -1,12 +1,11 @@
 import { Box, Paper, Typography, IconButton, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-import type { Trip } from '../../types.ts';
+import type { Trip } from '../types';
 
 interface TripCardProps {
   trip: Trip;
   removeTrip: (id: number) => void;
-  updateTrip: (id: number, field: keyof Trip, value: string) => void;
 }
 
 // Hardcoded data for MVP
@@ -62,7 +61,7 @@ const selectSx = {
     }
   };
 
-const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
+const TripCard = ({ trip, removeTrip }: TripCardProps) => {
 
   const index = trip.id;
 
@@ -96,7 +95,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
               labelId={`bus-service-label-${trip.id}`}
               value={trip.busService}
               label="Bus Service"
-              onChange={(e) => updateTrip(trip.id, 'busService', e.target.value as string)}
             >
               <MenuItem value=""><em>Select bus service</em></MenuItem>
               {busServices.map(service => (
@@ -111,7 +109,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
               labelId={`direction-label-${trip.id}`}
               value={trip.direction}
               label="Direction"
-              onChange={(e) => updateTrip(trip.id, 'direction', e.target.value as string)}
               disabled={!trip.busService}
             >
               <MenuItem value=""><em>Select direction</em></MenuItem>
@@ -129,7 +126,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
                   labelId={`start-stop-label-${trip.id}`}
                   value={trip.startStop}
                   label="Start Stop"
-                  onChange={(e) => updateTrip(trip.id, 'startStop', e.target.value as string)}
                   disabled={!trip.direction}
                 >
                   <MenuItem value=""><em>Select start stop</em></MenuItem>
@@ -147,7 +143,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
                   labelId={`end-stop-label-${trip.id}`}
                   value={trip.endStop}
                   label="End Stop"
-                  onChange={(e) => updateTrip(trip.id, 'endStop', e.target.value as string)}
                   disabled={!trip.startStop}
                 >
                   <MenuItem value=""><em>Select end stop</em></MenuItem>
@@ -168,7 +163,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
                 labelId={`start-station-label-${trip.id}`}
                 value={trip.startStation}
                 label="Start Station"
-                onChange={(e) => updateTrip(trip.id, 'startStation', e.target.value as string)}
               >
                 <MenuItem value=""><em>Select start station</em></MenuItem>
                 {mrtStations.map(station => (
@@ -185,7 +179,6 @@ const TripCard = ({ trip, removeTrip, updateTrip }: TripCardProps) => {
                 labelId={`end-station-label-${trip.id}`}
                 value={trip.endStation}
                 label="End Station"
-                onChange={(e) => updateTrip(trip.id, 'endStation', e.target.value as string)}
                 disabled={!trip.startStation}
               >
                 <MenuItem value=""><em>Select end station</em></MenuItem>

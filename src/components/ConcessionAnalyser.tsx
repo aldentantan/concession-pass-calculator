@@ -1,15 +1,15 @@
 import { Alert, Box, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
 import React, { useState } from 'react';
-import { extractTripsFromPdf } from '../utils/pdfParser';
+import { extractJourneysFromPdf } from '../utils/pdfParser';
 import PassRecommendation from './PassRecommendation';
 import PdfUpload from './PdfUpload';
 import TripReview from './TripReview';
 
-import type { ParsedTrip } from '../types';
+import type { Journey } from '../types';
 
 export default function ConcessionAnalyzer(): React.JSX.Element {
   const [activeStep, setActiveStep] = useState(0);
-  const [parsedTrips, setParsedTrips] = useState<ParsedTrip[]>([]);
+  const [journeys, setJourneys] = useState<Journey[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,15 +23,15 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
 
     try {
       // Parse PDF and extract trips
-      const trips = await extractTripsFromPdf(uploadedFile);
+      console.log(uploadedFile);
+      const response = await extractJourneysFromPdf(uploadedFile);
 
-      if (trips.length === 0) {
+      if (response.length === 0) {
         setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');
         setLoading(false);
         return;
       }
-
-      setParsedTrips(trips);
+      setJourneys(response);
       setActiveStep(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse PDF');
@@ -73,18 +73,17 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
       {!loading && activeStep === 0 && <PdfUpload onFileSelect={handleFileUpload} />}
       {!loading && activeStep === 1 && (
         <TripReview
-          trips={parsedTrips}
+          journeys={journeys}
           onNext={handleNext}
           onBack={handleBack}
-          onTripsUpdate={setParsedTrips}
         />
       )}
-      {!loading && activeStep === 2 && (
+      {/* {!loading && activeStep === 2 && (
         <PassRecommendation
-          trips={parsedTrips}
+          journeys={journeys}
           onBack={handleBack}
         />
-      )}
+      )} */}
     </Box>
   );
 }

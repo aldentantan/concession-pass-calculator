@@ -1,80 +1,60 @@
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Chip, IconButton, Paper, Typography } from '@mui/material';
+import { Box, Button, Grid, Paper, Typography } from '@mui/material';
+import { JourneyList } from './JourneyList';
 
-import type { ParsedTrip } from '../types';
+import type { Journey } from '../types';
 
 interface TripReviewProps {
-  trips: ParsedTrip[];
+  journeys: Journey[];
   onNext: () => void;
   onBack: () => void;
-  onTripsUpdate: (trips: ParsedTrip[]) => void;
 }
 
-export default function TripReview({ trips, onNext, onBack, onTripsUpdate }: TripReviewProps) {
-  const totalFare = trips.reduce((sum, trip) => sum + trip.fare, 0);
-  const busTrips = trips.filter(t => t.type === 'bus').length;
-  const mrtTrips = trips.filter(t => t.type === 'mrt').length;
-
-  const handleDelete = (index: number) => {
-    onTripsUpdate(trips.filter((_, i) => i !== index));
-  };
-
+export default function TripReview({ journeys, onNext, onBack }: TripReviewProps) {
+  const totalFare = journeys.reduce((sum, journey) => sum + journey.totalFare, 0);
+  const numTrips = journeys.reduce((sum) => sum + 1, 0);
+  const busDistance = journeys.reduce((sum, journey) => sum + journey.busDistance, 0);
+  // const mrtTrips = trips.filter((trip) => trip.type === 'mrt').length;
   return (
     <Box>
       <Typography variant="h5" sx={{ fontWeight: 700, color: '#03045E', mb: 2 }}>
         Review Extracted Trips
       </Typography>
 
-      {/* Summary Cards */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Paper sx={{ p: 2, flex: 1, bgcolor: '#CAF0F8' }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#0077B6' }}>
-            ${totalFare.toFixed(2)}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#03045E' }}>Total Fare</Typography>
-        </Paper>
-        <Paper sx={{ p: 2, flex: 1, bgcolor: '#CAF0F8' }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: '#0077B6' }}>
-            {trips.length}
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#03045E' }}>Total Trips</Typography>
-        </Paper>
-        <Paper sx={{ p: 2, flex: 1, bgcolor: '#CAF0F8' }}>
-          <Typography variant="body1" sx={{ fontWeight: 600, color: '#0077B6' }}>
-            {busTrips} Bus | {mrtTrips} MRT
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#03045E' }}>Trip Breakdown</Typography>
-        </Paper>
-      </Box>
-
       {/* Trip List */}
-      <Box sx={{ maxHeight: '400px', overflowY: 'auto', mb: 3 }}>
-        {trips.map((trip, index) => (
-          <Paper key={index} sx={{ p: 2, mb: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Chip
-              label={trip.type.toUpperCase()}
-              sx={{
-                bgcolor: trip.type === 'bus' ? '#90E0EF' : '#0077B6',
-                color: '#fff',
-                fontWeight: 600
-              }}
-            />
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {trip.startLocation} → {trip.endLocation}
+      <Box sx={{ display: 'flex' }}>
+        <Box sx={{ width: '45vw', p: 5 }}>
+          <Grid container spacing={5}>
+            <Grid size={6} direction='row'>
+              <Paper sx={{ p: 2, bgcolor: '#CAF0F8' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#0077B6' }}>
+                ${totalFare.toFixed(2)}
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                {trip.date} {trip.busService ? `• Bus ${trip.busService}` : ''}
+              <Typography variant="body2" sx={{ color: '#03045E' }}>Total Fare</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={6}>
+              <Paper sx={{ p: 2, bgcolor: '#CAF0F8' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#0077B6' }}>
+                {numTrips}
               </Typography>
-            </Box>
-            <Typography variant="body1" sx={{ fontWeight: 700, color: '#0077B6' }}>
-              ${trip.fare.toFixed(2)}
-            </Typography>
-            <IconButton size="small" onClick={() => handleDelete(index)}>
-              <DeleteIcon fontSize="small" />
-            </IconButton>
+              <Typography variant="body2" sx={{ color: '#03045E' }}>Public Transport Journeys</Typography>
+              </Paper>
+            </Grid>
+            <Grid size={6}>
+              <Paper sx={{ p: 2, bgcolor: '#CAF0F8' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#0077B6' }}>
+                {busDistance.toFixed(2)} km
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#03045E' }}>Distance travelled by Bus</Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
+        <Box sx={{ maxHeight: '70vh', overflowY: 'auto', mb: 3 }}>
+          <Paper sx={{ p: 2, flex: 1, bgcolor: '#CAF0F8' }}>
+            <JourneyList journeys={journeys} />
           </Paper>
-        ))}
+        </Box>
       </Box>
 
       {/* Navigation */}

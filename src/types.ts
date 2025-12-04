@@ -8,17 +8,6 @@ export interface ParsedTrip {
   journeyId?: string;
 }
 
-// export interface Trip {
-//   id: number;
-//   type: 'mrt' | 'bus';
-//   busService: string;
-//   direction: string;
-//   startStop: string;
-//   endStop: string;
-//   startStation: string;
-//   endStation: string;
-// }
-
 export interface Trip {
   time: string;
   type: 'mrt' | 'bus';
@@ -40,3 +29,10 @@ export interface Journey {
     totalDistance: number;
     totalFare: number;
 }
+
+export interface ConcessionPass {
+  id: string;
+  label: string;
+  monthlyPrice: number;
+  description: string;
+};

@@ -1,11 +1,12 @@
 import { Alert, Box, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
 import React, { useState } from 'react';
 import { extractJourneysFromPdf } from '../utils/pdfParser';
-import PassRecommendation from './PassRecommendation';
+import { calculateFaresOnConcession } from '../services/fareCalculationService';
+// import PassRecommendation from './PassRecommendation';
 import PdfUpload from './PdfUpload';
 import TripReview from './TripReview';
 
-import type { Journey } from '../types';
+import type { Journey, ConcessionFareResponse } from '../types';
 
 export default function ConcessionAnalyzer(): React.JSX.Element {
   const [activeStep, setActiveStep] = useState(0);
@@ -13,6 +14,10 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fares, setFares] = useState<ConcessionFareResponse>({
+    totalFareExcludingBus: 0,
+    totalFareExcludingMrt: 0,
+  });
 
   const steps = ['Upload PDF', 'Review Trips', 'Get Recommendation'];
 
@@ -23,7 +28,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
 
     try {
       // Parse PDF and extract trips
-      console.log(uploadedFile);
       const response = await extractJourneysFromPdf(uploadedFile);
 
       if (response.length === 0) {
@@ -32,6 +36,9 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
         return;
       }
       setJourneys(response);
+      const fares = await calculateFaresOnConcession(response);
+      setFares(fares);
+
       setActiveStep(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse PDF');
@@ -74,16 +81,17 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
       {!loading && activeStep === 1 && (
         <TripReview
           journeys={journeys}
+          fares={fares}
           onNext={handleNext}
           onBack={handleBack}
         />
       )}
-      {/* {!loading && activeStep === 2 && (
-        <PassRecommendation
-          journeys={journeys}
-          onBack={handleBack}
-        />
-      )} */}
+        {/* {!loading && activeStep === 2 && (
+          <PassRecommendation
+            journeys={journeys}
+            onBack={handleBack}
+          />
+        )} */}
     </Box>
   );
 }

@@ -30,6 +30,11 @@ export interface Journey {
     totalFare: number;
 }
 
+export interface ConcessionFareResponse { // The JSON object returned from backend after calculating fare prices with the different concession passes
+  totalFareExcludingBus: number;
+  totalFareExcludingMrt: number;
+}
+
 export interface ConcessionPass {
   id: string;
   label: string;

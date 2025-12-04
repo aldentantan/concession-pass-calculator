@@ -6,7 +6,7 @@ interface JourneyListProps {
   journeys: Journey[];
 }
 
-export const JourneyList: React.FC<JourneyListProps> = ({ journeys }) => {
+const JourneyList: React.FC<JourneyListProps> = ({ journeys }) => {
   if (!journeys || !Array.isArray(journeys)) {
     console.error('Invalid journeys data:', journeys);
     return (
@@ -26,10 +26,6 @@ export const JourneyList: React.FC<JourneyListProps> = ({ journeys }) => {
 
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#03045E' }}>
-        Total Journeys ({journeys.length})
-      </Typography>
-
       {journeys.map((journey, index) => (
         <Paper
           key={index}
@@ -41,11 +37,11 @@ export const JourneyList: React.FC<JourneyListProps> = ({ journeys }) => {
           }}
         >
           {/* Journey Header */}
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', pl: 1, pr: 1 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#03045E' }}>
               {journey.date} ({journey.day})
             </Typography>
-            <Typography variant="body2" sx={{ color: '#6C757D', mt: 0.5 }}>
+            <Typography variant="body2" sx={{ color: '#6C757D', mt: 0.5, fontWeight: 'bold' }}>
               {journey.startLocation} → {journey.endLocation}
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 600, color: '#0077B6', mt: 0.5 }}>
@@ -107,3 +103,5 @@ export const JourneyList: React.FC<JourneyListProps> = ({ journeys }) => {
     </Box>
   );
 };
+
+export default JourneyList;

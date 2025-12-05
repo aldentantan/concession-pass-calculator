@@ -64,7 +64,7 @@ const ConcessionComparerPanel = ({ totalFare, fares }: ConcessionComparerPanel) 
                     Concession Pass Impact
                 </Typography>
                 <Typography variant="body2" sx={{ color: '#03045E', mb: 2 }}>
-                    See how different concession passes would change your fares for this period.
+                    Compare how much you would spend based on your past public transport usage with different concession passes
                 </Typography>
 
                 {/* Pass Selector */}

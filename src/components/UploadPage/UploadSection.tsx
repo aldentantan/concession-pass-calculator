@@ -1,6 +1,6 @@
 import { Box, Paper, Typography, Button } from '@mui/material';
 import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { Section } from '../Section';
 
 interface UploadSectionProps {
@@ -76,7 +76,7 @@ export const UploadSection = ({
             </>
           ) : (
             <>
-              <DescriptionIcon sx={{ fontSize: 60, color: 'secondary.main', mb: 1 }} />
+              <DescriptionOutlinedIcon sx={{ fontSize: 60, color: 'secondary.main', mb: 1 }} />
               <Typography variant='h3' sx={{ fontWeight: 400, mb: 2 }}>
                 {selectedFile.name}
               </Typography>

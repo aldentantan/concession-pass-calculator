@@ -77,7 +77,7 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
         </Box>
       )}
 
-      {!loading && activeStep === 0 && <PdfUpload onFileSelect={handleFileUpload} />}
+      {!loading && activeStep === 0 && <PdfUpload handleFileUpload={handleFileUpload} />}
       {!loading && activeStep === 1 && (
         <TripReview
           journeys={journeys}

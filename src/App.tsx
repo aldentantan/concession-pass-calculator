@@ -1,12 +1,17 @@
+import { ThemeProvider } from '@mui/material/styles';
 import './App.css'
 import Home from './pages/Home';
+import { theme } from './theme';
+import AppLayout from './AppLayout';
 
 function App() {
 
   return (
-    <div className="w-full">
-      <Home />
-    </div>
+    <ThemeProvider theme={theme}>
+      <AppLayout>
+        <Home />
+      </AppLayout>
+    </ThemeProvider>
   )
 }
 

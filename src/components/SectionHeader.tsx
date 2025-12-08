@@ -9,9 +9,8 @@ export const SectionHeader = ({ title }: SectionHeaderProps) => {
         <Box sx={{
             display: 'flex',
             alignItems: 'flex-start',
-            p: 4
         }}>
-            <Typography variant='h3'>
+            <Typography variant='h2'>
                 {title}
             </Typography>
         </Box>

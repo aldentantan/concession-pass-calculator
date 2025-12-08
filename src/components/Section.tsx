@@ -10,7 +10,7 @@ export const Section = ({ children }: SectionProps) => {
         <Box sx={{
             width: '100%',
             mb: 4,
-            mt: 4
+            mt: 2
         }}>
             {children}
         </Box>

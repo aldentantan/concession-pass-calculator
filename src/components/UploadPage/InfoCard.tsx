@@ -19,7 +19,7 @@ export const InfoCard = ({ icon: Icon, title, text }: InfoCardProps) => {
             gap: 1,
             boxShadow: 0
         }}>
-            <Icon sx={{ fontSize: 32, color: 'secondary.light' }}/>
+            <Icon sx={{ fontSize: 32, color: 'secondary.main' }}/>
             <Typography variant='h4'>
                 {title}
             </Typography>

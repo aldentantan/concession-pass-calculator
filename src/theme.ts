@@ -1,16 +1,24 @@
 import { createTheme } from "@mui/material/styles";
 
+// Add custom background types
+declare module "@mui/material/styles" {
+  interface TypeBackground {
+    primary: string;
+    secondary: string;
+  }
+}
+
 const paletteTheme = createTheme({
   palette: {
     primary: {
       main: "#1e3a8a",
       dark: "#152860",
-      light: "#4b61a1",
+      light: "#dbeafe",
     },
     secondary: {
       main: "#14b7a5",
       dark: "#0e8073",
-      light: "#43c5b7",
+      light: "#cbfbf1",
     },
     text: {
       primary: "#4a5a6d",
@@ -18,6 +26,8 @@ const paletteTheme = createTheme({
     },
     background: {
         default: '#ffffff',
+        paper: '#ffffff',
+        primary: '#eff6ff',
         secondary: '#f0fdfa'
     }
   },
@@ -53,7 +63,7 @@ export const theme = createTheme(paletteTheme, {
       fontFamily: '"Inter"',
       fontSize: "0.8rem",
       fontWeight: 500,
-      color: paletteTheme.palette.primary.light,
+      color: paletteTheme.palette.primary.main,
     },
     subtitle1: {
       fontFamily: '"Inter"',

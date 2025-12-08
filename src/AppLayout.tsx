@@ -16,7 +16,6 @@ function AppLayout({ children }: AppLayoutProps) {
         }}>
             <Header />
             <Box sx={{
-                display: 'flex',
                 width: '80%',
             }}>
                 {children}

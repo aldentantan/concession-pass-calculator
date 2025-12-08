@@ -12,7 +12,6 @@ export const Header = () => {
             display: 'flex',
             alignItems: 'flex-start',
             borderBottom: '2px solid #e5e7eb',
-            ml: 4
         }}>
             <Typography variant='h1'>
                 Concession Pass Calculator

@@ -36,8 +36,8 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
         return;
       }
       setJourneys(response);
-      const fares = await calculateFaresOnConcession(response);
-      setFares(fares);
+      const calculatedFares = await calculateFaresOnConcession(response);
+      setFares(calculatedFares);
 
       setActiveStep(1);
     } catch (err) {
@@ -81,7 +81,7 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
       {!loading && activeStep === 1 && (
         <TripReview
           journeys={journeys}
-          fares={fares}
+          calculatedFares={fares}
           onNext={handleNext}
           onBack={handleBack}
         />

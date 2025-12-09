@@ -5,6 +5,7 @@ declare module "@mui/material/styles" {
   interface TypeBackground {
     primary: string;
     secondary: string;
+    error: string;
   }
 }
 
@@ -28,7 +29,8 @@ const paletteTheme = createTheme({
         default: '#ffffff',
         paper: '#ffffff',
         primary: '#eff6ff',
-        secondary: '#f0fdfa'
+        secondary: '#f0fdfa',
+        error: '#ffcdd2'
     }
   },
   spacing: 8,

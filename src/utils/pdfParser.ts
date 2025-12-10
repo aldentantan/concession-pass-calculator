@@ -18,9 +18,6 @@ export async function extractJourneysFromPdf(file: File): Promise<Journey[]> {
 
     const data = await response.json();
 
-    console.log(`✅ Received ${data.journeysCount} journeys from backend`);
-    console.log(data.journeys);
-
     return data.journeys;
   } catch (error) {
     console.error('Error calling PDF parsing API:', error);

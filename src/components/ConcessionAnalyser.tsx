@@ -10,7 +10,6 @@ import type { Journey, ConcessionFareResponse } from '../types';
 export default function ConcessionAnalyzer(): React.JSX.Element {
   const [activeStep, setActiveStep] = useState(0);
   const [journeys, setJourneys] = useState<Journey[]>([]);
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fares, setFares] = useState<ConcessionFareResponse>({
@@ -19,13 +18,12 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
   });
 
   const handleFileUpload = async (uploadedFile: File) => {
-    setFile(uploadedFile);
     setLoading(true);
     setError(null);
 
     try {
       // Parse PDF and extract trips
-      const response = await extractJourneysFromPdf(file);
+      const response = await extractJourneysFromPdf(uploadedFile);
 
       if (response.length === 0) {
         setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');

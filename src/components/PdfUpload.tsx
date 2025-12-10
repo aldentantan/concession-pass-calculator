@@ -9,7 +9,6 @@ interface PdfUploadProps {
 
 export default function PdfUpload({ handleFileUpload }: PdfUploadProps): React.JSX.Element {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileInputSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -23,17 +22,14 @@ export default function PdfUpload({ handleFileUpload }: PdfUploadProps): React.J
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
-    setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
-    setIsDragging(false);
   };
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
-    setIsDragging(false);
     const file = e.dataTransfer.files?.[0] || null;
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);

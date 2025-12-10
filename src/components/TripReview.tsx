@@ -14,7 +14,6 @@ interface TripReviewProps {
     totalFareExcludingBus: number;
     totalFareExcludingMrt: number;
   };
-  onNext: () => void;
   onBack: () => void;
 }
 
@@ -45,7 +44,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
     },
   ];
 
-export default function TripReview({ journeys, calculatedFares, onNext, onBack }: TripReviewProps) {
+export default function TripReview({ journeys, calculatedFares, onBack }: TripReviewProps) {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
 
   const totalFare = journeys.reduce((sum, journey) => sum + journey.totalFare, 0);

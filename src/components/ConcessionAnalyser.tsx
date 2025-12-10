@@ -25,7 +25,7 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
 
     try {
       // Parse PDF and extract trips
-      const response = await extractJourneysFromPdf(uploadedFile);
+      const response = await extractJourneysFromPdf(file);
 
       if (response.length === 0) {
         setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');
@@ -42,10 +42,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleNext = () => {
-    setActiveStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
@@ -71,7 +67,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
         <TripReview
           journeys={journeys}
           calculatedFares={fares}
-          onNext={handleNext}
           onBack={handleBack}
         />
       )}

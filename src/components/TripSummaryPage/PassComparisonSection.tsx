@@ -93,7 +93,7 @@ export const PassComparisonSection = ({ totalFare, calculatedFares }: PassCompar
                   {isSavingMoney ? <TrendingUpOutlinedIcon sx={{ color: 'secondary.main' }}/> : <TrendingDownOutlinedIcon sx={{ color: 'red' }}/>}
                   <Typography variant='body1' sx={{ color: isSavingMoney ? 'secondary.main' : 'red' }}>{isSavingMoney ? 'Savings' : 'Loss'}</Typography>
                 </Box>
-                <Typography variant='h3' sx={{ color: isSavingMoney ? 'secondary.main' : 'red' }}>${savings.toFixed(2)}</Typography>
+                <Typography variant='h3' sx={{ color: isSavingMoney ? 'secondary.main' : 'red' }}>${Math.abs(savings).toFixed(2)}</Typography>
               </Box>
             )
           }

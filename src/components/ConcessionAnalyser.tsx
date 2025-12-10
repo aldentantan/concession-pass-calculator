@@ -1,8 +1,7 @@
-import { Alert, Box, CircularProgress, Step, StepLabel, Stepper } from '@mui/material';
+import { Alert, Box, CircularProgress } from '@mui/material';
 import React, { useState } from 'react';
 import { extractJourneysFromPdf } from '../utils/pdfParser';
 import { calculateFaresOnConcession } from '../services/fareCalculationService';
-// import PassRecommendation from './PassRecommendation';
 import PdfUpload from './PdfUpload';
 import TripReview from './TripReview';
 
@@ -18,8 +17,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
     totalFareExcludingBus: 0,
     totalFareExcludingMrt: 0,
   });
-
-  const steps = ['Upload PDF', 'Review Trips', 'Get Recommendation'];
 
   const handleFileUpload = async (uploadedFile: File) => {
     setFile(uploadedFile);
@@ -57,14 +54,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
 
   return (
     <Box sx={{ width: '100%', p: 4 }}>
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
-
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
@@ -86,12 +75,6 @@ export default function ConcessionAnalyzer(): React.JSX.Element {
           onBack={handleBack}
         />
       )}
-        {/* {!loading && activeStep === 2 && (
-          <PassRecommendation
-            journeys={journeys}
-            onBack={handleBack}
-          />
-        )} */}
     </Box>
   );
 }

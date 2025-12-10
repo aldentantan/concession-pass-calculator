@@ -13,7 +13,7 @@ export const TripRows = ({ trips }: TripRowsProps) => {
       {trips.map((trip, tripIndex) => (
         <Box key={tripIndex} sx={{ display: 'flex', flexDirection: 'row', backgroundColor: '#f9fafb', pt: 1, pb: 1, pl: 3, pr: 3, borderTop: '1px solid #e5e7eb', gap: 2, alignItems: 'center' }}>
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '8%' }}>
-            <Typography variant='body2'>{trip.time}</Typography>
+            <Typography variant='body1'>{trip.time}</Typography>
           </Box>
           <Box sx={{ width: '12%', backgroundColor: trip.type === 'bus' ? 'primary.light' : 'secondary.light', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', p: 1, gap: 0.75, maxWidth: '108px' }}>
             {trip.type === 'bus' ? <AirportShuttleOutlinedIcon sx={{ fontSize: 16, color: 'primary.main' }} /> : <TrainOutlinedIcon sx={{ fontSize: 16, color: 'secondary.main' }} />}

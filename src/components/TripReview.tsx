@@ -6,6 +6,7 @@ import { TripReviewSection } from './TripSummaryPage/TripReviewSection';
 import { PassComparisonSection } from './TripSummaryPage/PassComparisonSection';
 import { RecommendationSection } from './TripSummaryPage/RecommendationSection';
 import { useState, useMemo } from 'react';
+import ArrowBackIosOutlinedIcon from '@mui/icons-material/ArrowBackIosOutlined';
 
 interface TripReviewProps {
   journeys: Journey[];
@@ -113,15 +114,8 @@ export default function TripReview({ journeys, calculatedFares, onNext, onBack }
 
       {/* Navigation */}
       <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-        <Button onClick={onBack} sx={{ bgcolor: '#90E0EF' }}>
+        <Button onClick={onBack} startIcon={<ArrowBackIosOutlinedIcon />}>
           Back
-        </Button>
-        <Button
-          onClick={onNext}
-          variant="contained"
-          sx={{ bgcolor: '#0077B6', flex: 1 }}
-        >
-          Calculate Best Pass
         </Button>
       </Box>
     </Box>

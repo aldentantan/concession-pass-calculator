@@ -87,7 +87,8 @@ export const theme = createTheme(paletteTheme, {
     body2: {
       fontFamily: '"Inter"',
       fontSize: "0.875rem",
-    },
+      color: paletteTheme.palette.text.secondary,
+    }
   },
   components: {
     MuiButton: {

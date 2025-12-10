@@ -57,7 +57,7 @@ export default function PdfUpload({ handleFileUpload }: PdfUploadProps): React.J
             Upload Your SimplyGo Statement
           </Typography>
           <Typography variant='body1'>
-            We'll extract your trips, fares, and distances automatically.
+            We'll extract your trips, fares, and distances automatically and recommend you the best concession pass based on your travel patterns.
           </Typography>
         </Box>
 

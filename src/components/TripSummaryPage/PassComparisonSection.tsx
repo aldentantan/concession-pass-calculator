@@ -45,6 +45,7 @@ export const PassComparisonSection = ({ passOptions, selectedPassId, onPassChang
             </Typography>
             <Typography variant='h3' sx={{ fontWeight: 400, mb: 2.5 }}>
               ${selectedPassComparison.cost.toFixed(2)}
+              {selectedPassId !== 'no-pass' ? ` (The pass costs $${selectedPassComparison.pass.monthlyPrice.toFixed(2)}/month.)` : ''}
             </Typography>
             <Typography variant='body1'>
               {selectedPassComparison.pass.description}

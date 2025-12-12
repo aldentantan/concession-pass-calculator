@@ -36,7 +36,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
     },
   ];
 
-export default function TripReview() {
+export default function TripSummaryPage() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
   const { journeys, fares: calculatedFares } = useJourneyContext();
 

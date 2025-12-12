@@ -32,7 +32,7 @@ export default function UploadPage(): React.JSX.Element {
       setJourneys(response);
       const calculatedFares = await calculateFaresOnConcession(response);
       setFares(calculatedFares);
-      navigate('/trip-review');
+      navigate('/trip-summary');
 
     } catch (err) {
       // setError(err instanceof Error ? err.message : 'Failed to parse PDF');

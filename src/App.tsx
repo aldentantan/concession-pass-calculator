@@ -1,16 +1,27 @@
 import { ThemeProvider } from '@mui/material/styles';
 import './App.css'
-import Home from './pages/Home';
 import { theme } from './theme';
 import AppLayout from './AppLayout';
+import { JourneyProvider } from './contexts/JourneyContext';
+import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+import UploadPage from './pages/UploadPage';
+import TripReview from './pages/TripReviewPage';
 
 function App() {
+  const router = createBrowserRouter([
+    { path: "/", element: <UploadPage /> },
+    { path: "/trip-review", element: <TripReview /> },
+    { path: "*", element: <Navigate to="/" replace /> },
+  ]);
 
   return (
     <ThemeProvider theme={theme}>
-      <AppLayout>
-        <Home />
-      </AppLayout>
+      <JourneyProvider>
+        <AppLayout>
+          <RouterProvider router={router} />
+        </AppLayout>
+      </JourneyProvider>
     </ThemeProvider>
   )
 }

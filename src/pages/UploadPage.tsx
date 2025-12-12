@@ -1,15 +1,45 @@
+
 import { Box, Typography } from '@mui/material';
 import React, { useRef, useState } from 'react';
-import { InfoSection } from './UploadPage/InfoSection';
-import { UploadSection } from './UploadPage/UploadSection';
+import { InfoSection } from '../components/UploadPage/InfoSection';
+import { UploadSection } from '../components/UploadPage/UploadSection';
+import { extractJourneysFromPdf } from '../services/pdfParserService';
+import { calculateFaresOnConcession } from '../services/fareCalculationService';
+import { useJourneyContext } from '../contexts/JourneyContext';
+import { useNavigate } from 'react-router-dom';
 
-interface PdfUploadProps {
-  handleFileUpload: (file: File) => void;
-}
-
-export default function PdfUpload({ handleFileUpload }: PdfUploadProps): React.JSX.Element {
+export default function UploadPage(): React.JSX.Element {
+  const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { setJourneys, setFares } = useJourneyContext();
+  const navigate = useNavigate();
+
+  const handleFileUpload = async (uploadedFile: File) => {
+      setLoading(true);
+      // setError(null);
+
+    try {
+      // Parse PDF and extract trips
+      const response = await extractJourneysFromPdf(uploadedFile);
+
+      if (response.length === 0) {
+        //   setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');
+          setLoading(false);
+        return;
+      }
+      setJourneys(response);
+      const calculatedFares = await calculateFaresOnConcession(response);
+      setFares(calculatedFares);
+      navigate('/trip-review');
+
+    } catch (err) {
+      // setError(err instanceof Error ? err.message : 'Failed to parse PDF');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileInputSelect = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0] || null;
@@ -59,6 +89,7 @@ export default function PdfUpload({ handleFileUpload }: PdfUploadProps): React.J
 
         {/* Upload Area */}
         <UploadSection
+          loading={loading}
           selectedFile={selectedFile}
           fileInputRef={fileInputRef}
           handleFileSelect={handleFileInputSelect}

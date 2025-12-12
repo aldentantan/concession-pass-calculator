@@ -1,21 +1,13 @@
 import { Box, Button } from '@mui/material';
-import type { Journey, ConcessionPass } from '../types';
-import { SummaryStatsSection } from './TripSummaryPage/SummaryStatsSection';
-import { SectionHeader } from './SectionHeader';
-import { TripReviewSection } from './TripSummaryPage/TripReviewSection';
-import { PassComparisonSection } from './TripSummaryPage/PassComparisonSection';
-import { RecommendationSection } from './TripSummaryPage/RecommendationSection';
+import type { ConcessionPass } from '../types';
+import { SectionHeader } from '../components/SectionHeader';
+import { SummaryStatsSection } from '../components/TripSummaryPage/SummaryStatsSection';
+import { TripReviewSection } from '../components/TripSummaryPage/TripReviewSection';
+import { PassComparisonSection } from '../components/TripSummaryPage/PassComparisonSection';
+import { RecommendationSection } from '../components/TripSummaryPage/RecommendationSection';
 import { useState, useMemo } from 'react';
 import ArrowBackIosOutlinedIcon from '@mui/icons-material/ArrowBackIosOutlined';
-
-interface TripReviewProps {
-  journeys: Journey[];
-  calculatedFares: {
-    totalFareExcludingBus: number;
-    totalFareExcludingMrt: number;
-  };
-  onBack: () => void;
-}
+import { useJourneyContext } from '../contexts/JourneyContext';
 
 const PASS_OPTIONS: ConcessionPass[] = [
     {
@@ -44,8 +36,9 @@ const PASS_OPTIONS: ConcessionPass[] = [
     },
   ];
 
-export default function TripReview({ journeys, calculatedFares, onBack }: TripReviewProps) {
+export default function TripReview() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
+  const { journeys, fares: calculatedFares } = useJourneyContext();
 
   const totalFare = journeys.reduce((sum, journey) => sum + journey.totalFare, 0);
   const numTrips = journeys.reduce((sum) => sum + 1, 0);
@@ -113,7 +106,7 @@ export default function TripReview({ journeys, calculatedFares, onBack }: TripRe
 
       {/* Navigation */}
       <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-        <Button onClick={onBack} startIcon={<ArrowBackIosOutlinedIcon />}>
+        <Button onClick={() => window.history.back()} startIcon={<ArrowBackIosOutlinedIcon />}>
           Back
         </Button>
       </Box>

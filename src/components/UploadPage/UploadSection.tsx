@@ -1,9 +1,10 @@
-import { Box, Paper, Typography, Button } from '@mui/material';
+import { Box, Paper, Typography, Button, CircularProgress } from '@mui/material';
 import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { Section } from '../Section';
 
 interface UploadSectionProps {
+  loading: boolean;
   selectedFile: File | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -15,6 +16,7 @@ interface UploadSectionProps {
 }
 
 export const UploadSection = ({
+  loading,
   selectedFile,
   fileInputRef,
   handleFileSelect,
@@ -36,10 +38,10 @@ export const UploadSection = ({
         gap: 2
       }}>
         <Box
-          onClick={handleClick}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onClick={loading ? undefined : handleClick}
+          onDragOver={loading ? undefined : handleDragOver}
+          onDragLeave={loading ? undefined : handleDragLeave}
+          onDrop={loading ? undefined : handleDrop}
           sx={{
             border: '2px dashed',
             borderColor: selectedFile ? 'secondary.main' : '#d1d5dc',
@@ -88,7 +90,9 @@ export const UploadSection = ({
 
         </Box>
         <Button
-        onClick={() => selectedFile && handleFileUpload(selectedFile)}
+          disabled={loading || !selectedFile}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+          onClick={() => selectedFile && handleFileUpload(selectedFile)}
           sx={{
             width: '100%'
           }}>

@@ -96,7 +96,7 @@ export const UploadSection = ({
           sx={{
             width: '100%'
           }}>
-          Continue
+          {loading ? 'Uploading...' : 'Upload File'}
         </Button>
       </Paper>
     </Section>

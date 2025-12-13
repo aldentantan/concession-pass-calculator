@@ -1,16 +1,12 @@
-import type { ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { Header } from './components/Header';
+import { Outlet } from 'react-router-dom';
 
-interface AppLayoutProps {
-    children: ReactNode;
-}
-
-function AppLayout({ children }: AppLayoutProps) {
+function AppLayout() {
     return (
         <Box sx={{
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             minHeight: '100vh',
             alignItems: 'center'
         }}>
@@ -19,7 +15,7 @@ function AppLayout({ children }: AppLayoutProps) {
                 width: '80%',
                 p: 2
             }}>
-                {children}
+                <Outlet />
             </Box>
         </Box>
     );

@@ -9,7 +9,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
-export default function App() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false)
@@ -51,7 +51,7 @@ export default function App() {
 
   // Show login form
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 8 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 2 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: '45%', gap: 2 }}>
         <Typography variant='h1'>Concession Pass Calculator</Typography>
         <Typography variant='h2'>Sign In To Find Your Ideal Concession Pass</Typography>
@@ -63,7 +63,7 @@ export default function App() {
           <TextField
             placeholder='johndoe@gmail.com'
             fullWidth
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.toLowerCase())}
             slotProps={{
               input: {
                 startAdornment:

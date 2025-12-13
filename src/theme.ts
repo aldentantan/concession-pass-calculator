@@ -109,6 +109,17 @@ export const theme = createTheme(paletteTheme, {
           borderRadius: 12
         }
       }
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          "& .MuiOutlinedInput-root": {
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderRadius: '16px'
+            }
+          }
+        }
+      }
     }
   }
 });

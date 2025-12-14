@@ -1,9 +1,11 @@
 import { Box, Typography } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export const Header = () => {
     const { session, signOut } = useAuth();
+    const location = useLocation();
+    const isResetPasswordPage = location.pathname === '/reset-password';
 
     return (
         <Box sx={{
@@ -21,7 +23,7 @@ export const Header = () => {
             <Typography variant='h1'>
                 Concession Pass Calculator
             </Typography>
-            {session && (
+            {session && !isResetPasswordPage && (
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4, p: 2 }}>
                     <Typography variant='body1'>
                         {session.user.email}

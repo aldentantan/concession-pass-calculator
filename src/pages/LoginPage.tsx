@@ -14,7 +14,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false)
 
-  const { session, loading } = useAuth();
+  const { session, loading, isRecoverySession } = useAuth();
   const navigate = useNavigate();
 
   const handleSignIn = async (): Promise<void> => {
@@ -22,6 +22,14 @@ export default function LoginPage() {
     if (error) alert(error.message);
   };
 
+  if (session && isRecoverySession) {
+    navigate('/reset-password');
+  }
+
+  if (session && !isRecoverySession) {
+    navigate('/upload');
+  }
+  
   // Show verification state
   if (loading) {
     return (
@@ -42,11 +50,6 @@ export default function LoginPage() {
         <p>Loading your account...</p>
       </div>
     );
-  }
-
-  // If user is logged in, show welcome screen
-  if (session) {
-    navigate('/upload');
   }
 
   // Show login form
@@ -109,6 +112,9 @@ export default function LoginPage() {
               }
             }}
           />
+          <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
+            <Link to="/forget-password" style={{ color: '#14b7a5' }}>Forgot Password?</Link>
+          </Box>
           <Button
             onClick={handleSignIn}
             sx={{ width: '100%' }}

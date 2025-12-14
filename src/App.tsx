@@ -11,6 +11,8 @@ import UploadPage from './pages/UploadPage';
 import TripSummaryPage from './pages/TripSummaryPage';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
+import ForgetPasswordPage from './pages/ForgetPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   const router = createBrowserRouter([
@@ -20,6 +22,8 @@ function App() {
       children: [
         { index: true, element: <LoginPage /> },
         { path: "signup", element: <SignUpPage /> },
+        { path: "forget-password", element: <ForgetPasswordPage /> },
+        { path: "reset-password", element: <ProtectedRoute><ResetPasswordPage /></ProtectedRoute> },
         { path: "upload", element: <ProtectedRoute><UploadPage /></ProtectedRoute> },
         { path: "trip-summary", element: <ProtectedRoute><TripSummaryPage /></ProtectedRoute> },
         { path: "*", element: <Navigate to="/" replace /> },

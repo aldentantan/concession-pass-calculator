@@ -1,5 +1,5 @@
 
-import { Box, Typography, Alert, AlertTitle } from '@mui/material';
+import { Box, Typography, Alert } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { InfoSection } from '../components/UploadPage/InfoSection';
 import { UploadSection } from '../components/UploadPage/UploadSection';

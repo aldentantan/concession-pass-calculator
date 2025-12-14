@@ -1,5 +1,5 @@
 
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Alert, AlertTitle } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { InfoSection } from '../components/UploadPage/InfoSection';
 import { UploadSection } from '../components/UploadPage/UploadSection';
@@ -7,35 +7,30 @@ import { extractJourneysFromPdf } from '../services/pdfParserService';
 import { calculateFaresOnConcession } from '../services/fareCalculationService';
 import { useJourneyContext } from '../contexts/JourneyContext';
 import { useNavigate } from 'react-router-dom';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
 export default function UploadPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { setJourneys, setFares } = useJourneyContext();
   const navigate = useNavigate();
 
   const handleFileUpload = async (uploadedFile: File) => {
-      setLoading(true);
-      // setError(null);
-
+    setLoading(true);
+    setError(null);
     try {
       // Parse PDF and extract trips
       const response = await extractJourneysFromPdf(uploadedFile);
-
-      if (response.length === 0) {
-        //   setError('No trips found in PDF. Please ensure it is a valid SimplyGo statement.');
-          setLoading(false);
-        return;
-      }
       setJourneys(response);
       const calculatedFares = await calculateFaresOnConcession(response);
       setFares(calculatedFares);
       navigate('/trip-summary');
 
     } catch (err) {
-      // setError(err instanceof Error ? err.message : 'Failed to parse PDF');
+      setError(err instanceof Error ? err.message : 'Failed to parse PDF');
     } finally {
       setLoading(false);
     }
@@ -46,7 +41,7 @@ export default function UploadPage(): React.JSX.Element {
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file)
     } else if (file) {
-      alert('Please select your SimplyGo PDF');
+      setError('Only PDF files are allowed. Please select your SimplyGo PDF.');
     }
   };
 
@@ -86,6 +81,24 @@ export default function UploadPage(): React.JSX.Element {
             We'll extract your trips, fares, and distances automatically and recommend you the best concession pass based on your travel patterns.
           </Typography>
         </Box>
+
+        {error && (
+          <Alert
+            severity="error"
+            sx={{ mt: 2 }}
+            icon={<ErrorOutlineIcon />}
+            onClose={() => setError(null)}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h4" component="span" sx={{ fontWeight: 600 }}>
+                Upload Failed:
+              </Typography>
+              <Typography variant="body2" component="span">
+                {error}
+              </Typography>
+            </Box>
+          </Alert>
+        )}
 
         {/* Upload Area */}
         <UploadSection

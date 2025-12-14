@@ -16,7 +16,8 @@ export async function extractJourneysFromPdf(file: File | null): Promise<Journey
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to parse PDF: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to parse PDF');
     }
 
     const data = await response.json();

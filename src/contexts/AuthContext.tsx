@@ -5,6 +5,7 @@ import { supabase } from "../supabase";
 interface AuthContextType {
     session: Session | null;
     user: User | null;
+    access_token: string | null;
     loading: boolean;
     isRecoverySession: boolean; // User is assigned a temp recovery session when resetting password
     signOut: () => Promise<void>;
@@ -61,7 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(null);
     };
 
-    return <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, isRecoverySession, signOut }}>
+    return <AuthContext.Provider value={{
+        session,
+        user: session?.user ?? null,
+        access_token: session?.access_token ?? null,
+        loading,
+        isRecoverySession,
+        signOut
+    }}
+    >
         {children}
     </AuthContext.Provider>
 }

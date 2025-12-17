@@ -3,11 +3,10 @@ import { Box, Typography, Alert } from '@mui/material';
 import React, { useRef, useState } from 'react';
 import { InfoSection } from '../components/UploadPage/InfoSection';
 import { UploadSection } from '../components/UploadPage/UploadSection';
-import { extractJourneysFromPdf } from '../services/pdfParserService';
-import { calculateFaresOnConcession } from '../services/fareCalculationService';
 import { useJourneyContext } from '../contexts/JourneyContext';
 import { useNavigate } from 'react-router-dom';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
+import { uploadAndProcessPdf } from '../services/pdfUploadService';
 
 export default function UploadPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
@@ -22,11 +21,9 @@ export default function UploadPage(): React.JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      // Parse PDF and extract trips
-      const response = await extractJourneysFromPdf(uploadedFile);
-      setJourneys(response);
-      const calculatedFares = await calculateFaresOnConcession(response);
-      setFares(calculatedFares);
+      const response = await uploadAndProcessPdf(uploadedFile);
+      setJourneys(response.journeys);
+      setFares(response.fares);
       navigate('/trip-summary');
 
     } catch (err) {

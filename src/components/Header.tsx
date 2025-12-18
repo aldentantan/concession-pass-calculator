@@ -25,6 +25,8 @@ export const Header = () => {
             </Typography>
             {session && !isResetPasswordPage && (
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 4, p: 2 }}>
+                    <Link to="/upload">Upload</Link>
+                    <Link to="/statements">Statements</Link>
                     <Typography variant='body1'>
                         {session.user.email}
                     </Typography>

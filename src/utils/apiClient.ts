@@ -21,16 +21,30 @@ class ApiClient {
     return {};
   }
 
-  async get(endpoint: string): Promise<any> {
+  async get(endpoint: string, params?: Record<string, any>): Promise<any> {
     const authHeader = await this.getAuthHeader();
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+
+    let url = `${this.baseUrl}${endpoint}`;
+    if (params) {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+
+    const response = await fetch(url, {
       headers: authHeader,
     });
     const data = await response.json();
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Request failed");
+      throw new Error(data.message || "Request failed");
     }
     return data;
   }
@@ -53,6 +67,34 @@ class ApiClient {
     const data = await res.json();
 
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  }
+
+  async delete(endpoint: string, params?: Record<string, any>): Promise<any> {
+    const authHeader = await this.getAuthHeader();
+
+    let url = `${this.baseUrl}${endpoint}`;
+    if (params) {
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      const queryString = searchParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+    console.log("DELETE URL:", url);
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: authHeader,
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Request failed");
+    }
     return data;
   }
 }

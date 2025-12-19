@@ -22,80 +22,111 @@ class ApiClient {
   }
 
   async get(endpoint: string, params?: Record<string, any>): Promise<any> {
-    const authHeader = await this.getAuthHeader();
+    try {
+      const authHeader = await this.getAuthHeader();
 
-    let url = `${this.baseUrl}${endpoint}`;
-    if (params) {
-      const searchParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, String(value));
+      let url = `${this.baseUrl}${endpoint}`;
+      if (params) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            searchParams.append(key, String(value));
+          }
+        });
+        const queryString = searchParams.toString();
+        if (queryString) {
+          url += `?${queryString}`;
         }
-      });
-      const queryString = searchParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
       }
-    }
+      const response = await fetch(url, {
+        headers: authHeader,
+      });
+      const data = await response.json();
 
-    const response = await fetch(url, {
-      headers: authHeader,
-    });
-    const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed");
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("Network error or server is unreachable");
+      }
+      if (error instanceof Error) {
+        throw new Error(`Get ${endpoint} failed: ${error.message}`);
+      }
 
-    if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      throw new Error(`An unknown error occurred: ${error}.`);
     }
-    return data;
   }
 
   async post(endpoint: string, body: any): Promise<any> {
-    const isFormData = body instanceof FormData;
+    try {
+      const isFormData = body instanceof FormData;
 
-    const authHeader = await this.getAuthHeader();
-    const headers: Record<string, string> = { ...authHeader };
-    if (!isFormData) {
-      headers["Content-Type"] = "application/json";
+      const authHeader = await this.getAuthHeader();
+      const headers: Record<string, string> = { ...authHeader };
+      if (!isFormData) {
+        headers["Content-Type"] = "application/json";
+      }
+
+      const res = await fetch(`${this.baseUrl}${endpoint}`, {
+        method: "POST",
+        headers,
+        body: isFormData ? body : JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("Network error or server is unreachable");
+      }
+      if (error instanceof Error) {
+        throw new Error(`Get ${endpoint} failed: ${error.message}`);
+      }
+
+      throw new Error(`An unknown error occurred: ${error}.`);
     }
-
-    const res = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: "POST",
-      headers,
-      body: isFormData ? body : JSON.stringify(body),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    return data;
   }
 
   async delete(endpoint: string, params?: Record<string, any>): Promise<any> {
-    const authHeader = await this.getAuthHeader();
+    try {
+      const authHeader = await this.getAuthHeader();
 
-    let url = `${this.baseUrl}${endpoint}`;
-    if (params) {
-      const searchParams = new URLSearchParams();
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          searchParams.append(key, String(value));
+      let url = `${this.baseUrl}${endpoint}`;
+      if (params) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            searchParams.append(key, String(value));
+          }
+        });
+        const queryString = searchParams.toString();
+        if (queryString) {
+          url += `?${queryString}`;
         }
-      });
-      const queryString = searchParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
       }
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: authHeader,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Request failed");
+      }
+      return data;
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("Network error or server is unreachable");
+      }
+      if (error instanceof Error) {
+        throw new Error(`Get ${endpoint} failed: ${error.message}`);
+      }
+
+      throw new Error(`An unknown error occurred: ${error}.`);
     }
-    console.log("DELETE URL:", url);
-    const response = await fetch(url, {
-      method: "DELETE",
-      headers: authHeader,
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.message || "Request failed");
-    }
-    return data;
   }
 }
 

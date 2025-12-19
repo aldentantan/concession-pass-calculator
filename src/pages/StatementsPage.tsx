@@ -7,11 +7,17 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import { useEffect, useState } from "react";
-import { fetchStatements, deleteStatement } from "../services/statementsService";
+import { fetchStatements, viewStatementTripSummary, deleteStatement } from "../services/statementsService";
+import { formatDate } from '../utils/formatDate'
+import { useNavigate } from "react-router-dom";
+import { useJourneyContext } from "../contexts/JourneyContext";
+
 import type { Statement } from "../types";
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
+  const { setJourneys, setFares } = useJourneyContext();
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadStatements() {
@@ -22,6 +28,13 @@ export default function StatementsPage() {
     }
     loadStatements();
   }, []);
+
+  const viewTripSummary = async (statementId: string) => {
+    const { journeys, fares } = await viewStatementTripSummary(statementId);
+    setJourneys(journeys);
+    setFares(fares);
+    navigate('/trip-summary')
+  }
 
   const deleteRow = async (statementId: string) => {
     console.log("Deleting statement with ID:", statementId);
@@ -47,8 +60,9 @@ export default function StatementsPage() {
             <TableHead>
               <TableRow>
                 <TableCell>Month</TableCell>
+                <TableCell>File Name</TableCell>
                 <TableCell>Date Uploaded</TableCell>
-                <TableCell>Total Fares</TableCell>
+                <TableCell>Total Fares Paid</TableCell>
                 <TableCell>Journeys</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
@@ -57,13 +71,14 @@ export default function StatementsPage() {
               {statements.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.statement_month}</TableCell>
-                  <TableCell>{row.created_at}</TableCell>
+                  <TableCell>{row.file_name}</TableCell>
+                  <TableCell>{formatDate(row.created_at)}</TableCell>
                   <TableCell>${row.total_fare}</TableCell>
                   <TableCell>{row.journey_count}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
                       <Tooltip title="View Trip Summary" placement="top">
-                        <IconButton ><ListRoundedIcon /></IconButton>
+                        <IconButton onClick={() => viewTripSummary(String(row.id))}><ListRoundedIcon /></IconButton>
                       </Tooltip>
                       <Tooltip title="View SimplyGo PDF" placement="top">
                         <IconButton><OpenInNewIcon /></IconButton>

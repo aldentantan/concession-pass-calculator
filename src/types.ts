@@ -44,8 +44,9 @@ export interface ConcessionPass {
 
 export interface Statement {
   id: number;
-  filename: string;
-  filepath: string;
+  file_name: string;
+  file_path: string;
+  file_hash: string;
   total_fare: number;
   journey_count: number;
   statement_month: string;

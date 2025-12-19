@@ -1,5 +1,6 @@
 import { supabase } from "../supabase";
 import { apiClient } from "../utils/apiClient";
+import { generateFileHash } from "../utils/generateFileHash";
 
 export async function uploadAndProcessPdf(file: File) {
   if (!file) {
@@ -15,9 +16,11 @@ export async function uploadAndProcessPdf(file: File) {
     throw new Error("User not authenticated");
   }
 
-  const statementId = crypto.randomUUID();
+  // Generate SHA-256 hash of PDF file to prevent duplicate PDF uploads by the same user
+  const fileHash = await generateFileHash(file);
+
   const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-  const storageFilePath = `${userId}/${statementId}-${sanitizedFilename}`;
+  const storageFilePath = `${userId}/${fileHash}-${sanitizedFilename}`;
 
   try {
     // Upload PDF to Supabase storage bucket
@@ -36,7 +39,7 @@ export async function uploadAndProcessPdf(file: File) {
     const { data: signedUrlData, error: signedUrlError } =
       await supabase.storage
         .from("simplygo-pdf")
-        .createSignedUrl(storageFilePath, 3600); // 1 hour
+        .createSignedUrl(storageFilePath, 300); // 5 minutes
 
     if (signedUrlError || !signedUrlData) {
       console.log("Signed URL error:", signedUrlError);
@@ -49,6 +52,7 @@ export async function uploadAndProcessPdf(file: File) {
       signedUrl: signedUrlData.signedUrl,
       storageFilePath,
       fileName: file.name,
+      fileHash
     });
 
     return {

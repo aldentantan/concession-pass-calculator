@@ -21,9 +21,9 @@ export default function UploadPage(): React.JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      const response = await uploadAndProcessPdf(uploadedFile);
-      setJourneys(response.journeys);
-      setFares(response.fares);
+      const { journeys, fares } = await uploadAndProcessPdf(uploadedFile);
+      setJourneys(journeys);
+      setFares(fares);
       navigate('/trip-summary');
 
     } catch (err) {

@@ -41,3 +41,13 @@ export interface ConcessionPass {
   monthlyPrice: number;
   description: string;
 };
+
+export interface Statement {
+  id: number;
+  filename: string;
+  filepath: string;
+  total_fare: number;
+  journey_count: number;
+  statement_month: string;
+  created_at: string;
+}

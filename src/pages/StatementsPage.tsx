@@ -7,7 +7,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import { useEffect, useState } from "react";
-import { fetchStatements, viewStatementTripSummary, deleteStatement } from "../services/statementsService";
+import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStatement } from "../services/statementsService";
 import { formatDate } from '../utils/formatDate'
 import { useNavigate } from "react-router-dom";
 import { useJourneyContext } from "../contexts/JourneyContext";
@@ -34,6 +34,12 @@ export default function StatementsPage() {
     setJourneys(journeys);
     setFares(fares);
     navigate('/trip-summary')
+  }
+
+  const viewPdf = async (statementId: string) => {
+    const response = await createSignedLink(statementId);
+    const statementSignedLink = response.signedLink;
+    window.open(statementSignedLink, '_blank');
   }
 
   const deleteRow = async (statementId: string) => {
@@ -81,7 +87,7 @@ export default function StatementsPage() {
                         <IconButton onClick={() => viewTripSummary(String(row.id))}><ListRoundedIcon /></IconButton>
                       </Tooltip>
                       <Tooltip title="View SimplyGo PDF" placement="top">
-                        <IconButton><OpenInNewIcon /></IconButton>
+                        <IconButton onClick={() => viewPdf(String(row.id))}><OpenInNewIcon /></IconButton>
                       </Tooltip>
                       <Tooltip title="Retrigger Calculation for Statement" placement="top">
                         <IconButton><AutorenewIcon /></IconButton>

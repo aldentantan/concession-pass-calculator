@@ -20,3 +20,8 @@ export async function viewStatementTripSummary(statementId: string) {
   const response = await apiClient.get(`/statements/${statementId}/trip-summary`);
   return response;
 }
+
+export async function createSignedLink(statementId: string) {
+  const response = await apiClient.get(`/statements/${statementId}/create-signed-link`);
+  return response;
+}

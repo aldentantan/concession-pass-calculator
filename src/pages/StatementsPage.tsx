@@ -6,18 +6,30 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
-
-function createData(month: string, dateUploaded: string, totalFares: number, journeys: number) {
-  return { month, dateUploaded, totalFares, journeys };
-}
-
-const mockData = [
-  createData('January 2024', '2024-02-01', 45.50, 30),
-  createData('February 2024', '2024-03-01', 38.00, 25),
-  createData('March 2024', '2024-04-01', 50.75, 32),
-]
+import { useEffect, useState } from "react";
+import { fetchStatements, deleteStatement } from "../services/statementsService";
+import type { Statement } from "../types";
 
 export default function StatementsPage() {
+  const [statements, setStatements] = useState<Statement[]>([]);
+
+  useEffect(() => {
+    async function loadStatements() {
+      console.log("Fetching statements...");
+      const res = await fetchStatements();
+      setStatements(res);
+      console.log("Statements loaded:", res);
+    }
+    loadStatements();
+  }, []);
+
+  const deleteRow = async (statementId: string) => {
+    console.log("Deleting statement with ID:", statementId);
+    await deleteStatement(statementId);
+    const res = await fetchStatements();
+    setStatements(res);
+  };
+
   return (
     <Box>
       <SectionHeader title="My Transport Statements" />
@@ -42,25 +54,25 @@ export default function StatementsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {mockData.map((row) => (
-                <TableRow key={row.month}>
-                  <TableCell>{row.month}</TableCell>
-                  <TableCell>{row.dateUploaded}</TableCell>
-                  <TableCell>${row.totalFares.toFixed(2)}</TableCell>
-                  <TableCell>{row.journeys}</TableCell>
+              {statements.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.statement_month}</TableCell>
+                  <TableCell>{row.created_at}</TableCell>
+                  <TableCell>${row.total_fare}</TableCell>
+                  <TableCell>{row.journey_count}</TableCell>
                   <TableCell>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
-                      <Tooltip title="View SimplyGo PDF" placement="top">
-                        <IconButton><OpenInNewIcon /></IconButton>
-                      </Tooltip>
                       <Tooltip title="View Trip Summary" placement="top">
                         <IconButton ><ListRoundedIcon /></IconButton>
+                      </Tooltip>
+                      <Tooltip title="View SimplyGo PDF" placement="top">
+                        <IconButton><OpenInNewIcon /></IconButton>
                       </Tooltip>
                       <Tooltip title="Retrigger Calculation for Statement" placement="top">
                         <IconButton><AutorenewIcon /></IconButton>
                       </Tooltip>
                       <Tooltip title="Delete Statement" placement="top">
-                        <IconButton color="error"><DeleteRoundedIcon /></IconButton>
+                        <IconButton color="error" onClick={() => deleteRow(String(row.id))}><DeleteRoundedIcon /></IconButton>
                       </Tooltip>
                     </Box>
                   </TableCell>

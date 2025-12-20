@@ -1,5 +1,5 @@
 import { SectionHeader } from "../components/SectionHeader";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { useEffect, useState } from "react";
 import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStatement, reanalyseStatement } from "../services/statementsService";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ import type { Statement } from "../types";
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
+  const [loadingPage, setLoadingPage] = useState<boolean>(true);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
   const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
@@ -20,6 +21,7 @@ export default function StatementsPage() {
     async function loadStatements() {
       const res = await fetchStatements();
       setStatements(res);
+      setLoadingPage(false);
     }
     loadStatements();
   }, []);
@@ -58,6 +60,8 @@ export default function StatementsPage() {
     const res = await fetchStatements();
     setStatements(res);
   };
+
+  if (loadingPage) return <CircularProgress />;
 
   return (
     <Box>

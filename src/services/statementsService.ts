@@ -25,3 +25,8 @@ export async function createSignedLink(statementId: string) {
   const response = await apiClient.get(`/statements/${statementId}/create-signed-link`);
   return response;
 }
+
+export async function reanalyseStatement(statementId: string) {
+  const response = await apiClient.post(`/statements/${statementId}/reanalyse`, {});
+  return response;
+}

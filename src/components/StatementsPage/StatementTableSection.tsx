@@ -12,12 +12,14 @@ interface StatementTableSectionProps {
   statements: Statement[];
   viewTripSummary: (statementId: string) => void;
   viewPdf: (statementId: string) => void;
+  reanalyse: (statementId: string) => void;
   deleteRow: (statementId: string) => void;
   loadingSummary: boolean;
+  loadingAnalysis: boolean;
   loadingStatementId?: string;
 }
 
-export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, deleteRow, loadingSummary, loadingStatementId }: StatementTableSectionProps) => {
+export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, reanalyse, deleteRow, loadingSummary, loadingAnalysis, loadingStatementId }: StatementTableSectionProps) => {
   if (statements.length == 0) {
     return (
       <Section>
@@ -63,8 +65,12 @@ export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, de
                       <IconButton onClick={() => viewPdf(String(row.id))} disabled={loadingSummary}><OpenInNewIcon /></IconButton>
                     </Tooltip>
                     <Tooltip title="Retrigger Calculation for Statement" placement="top">
-                      <IconButton disabled={loadingSummary}><AutorenewIcon /></IconButton>
-                    </Tooltip>
+                      {loadingAnalysis && loadingStatementId === String(row.id) ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                      <IconButton onClick={() => reanalyse(String(row.id))} disabled={loadingSummary}><AutorenewIcon /></IconButton>
+                      )}
+                      </Tooltip>
                     <Tooltip title="Delete Statement" placement="top">
                       <IconButton color="error" onClick={() => deleteRow(String(row.id))} disabled={loadingSummary}><DeleteRoundedIcon /></IconButton>
                     </Tooltip>

@@ -1,7 +1,7 @@
 import { SectionHeader } from "../components/SectionHeader";
 import { Box, Typography, Button } from "@mui/material";
 import { useEffect, useState } from "react";
-import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStatement } from "../services/statementsService";
+import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStatement, reanalyseStatement } from "../services/statementsService";
 import { useNavigate } from "react-router-dom";
 import { useJourneyContext } from "../contexts/JourneyContext";
 import { StatementTableSection } from "../components/StatementsPage/StatementTableSection";
@@ -11,6 +11,7 @@ import type { Statement } from "../types";
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
+  const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
   const { setJourneys, setFares } = useJourneyContext();
   const navigate = useNavigate();
@@ -40,6 +41,17 @@ export default function StatementsPage() {
     window.open(statementSignedLink, '_blank');
   }
 
+  const reanalyse = async (statementId: string) => {
+    setLoadingAnalysis(true);
+    setLoadingStatementId(statementId);
+    const { journeys, fares } = await reanalyseStatement(statementId);
+    setJourneys(journeys);
+    setFares(fares);
+    navigate('/trip-summary');
+    setLoadingAnalysis(false);
+    setLoadingStatementId(undefined);
+  }
+
   const deleteRow = async (statementId: string) => {
     console.log("Deleting statement with ID:", statementId);
     await deleteStatement(statementId);
@@ -58,7 +70,7 @@ export default function StatementsPage() {
           Upload New
         </Button>
       </Box>
-      <StatementTableSection statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingStatementId={loadingStatementId}/>
+      <StatementTableSection statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId}/>
     </Box>
   )
 }

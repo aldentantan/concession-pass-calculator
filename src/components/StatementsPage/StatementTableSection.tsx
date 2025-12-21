@@ -36,7 +36,7 @@ export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, re
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell>Month</TableCell>
+              <TableCell>Month/Year</TableCell>
               <TableCell>File Name</TableCell>
               <TableCell>Date Uploaded</TableCell>
               <TableCell>Total Fares Paid</TableCell>
@@ -47,7 +47,7 @@ export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, re
           <TableBody>
             {statements.map((row) => (
               <TableRow key={row.id}>
-                <TableCell>{row.statement_month}</TableCell>
+                <TableCell>{row.statement_month} {row.statement_year}</TableCell>
                 <TableCell>{row.file_name}</TableCell>
                 <TableCell>{formatDate(row.created_at)}</TableCell>
                 <TableCell>${row.total_fare}</TableCell>

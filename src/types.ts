@@ -50,5 +50,6 @@ export interface Statement {
   total_fare: number;
   journey_count: number;
   statement_month: string;
+  statement_year: number;
   created_at: string;
 }

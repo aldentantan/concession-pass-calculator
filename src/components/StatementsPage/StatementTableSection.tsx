@@ -1,6 +1,8 @@
 import { Section } from "../Section";
 import { Box, Table, TableCell, TableHead, TableContainer, TableRow, TableBody, Paper, IconButton, Tooltip, Typography, CircularProgress } from "@mui/material";
-import { formatDate } from '../../utils/formatDate'
+import { formatDate } from '../../utils/formatDate';
+import { DeleteModal } from "./DeleteModal";
+import { useState } from "react";
 import type { Statement } from "../../types";
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -20,6 +22,27 @@ interface StatementTableSectionProps {
 }
 
 export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, reanalyse, deleteRow, loadingSummary, loadingAnalysis, loadingStatementId }: StatementTableSectionProps) => {
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [statementIdToDelete, setStatementIdToDelete] = useState<string>('');
+  const [statementFileNameToDelete, setStatementFileNameToDelete] = useState<string>('');
+
+  const onOpenDeleteModal = (statementId: string) => {
+    setStatementIdToDelete(statementId);
+    setStatementFileNameToDelete(statements.find(s => s.id === Number(statementId))?.file_name || '');
+    setDeleteModalOpen(true);
+  }
+
+  const onCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setStatementIdToDelete('');
+    setStatementFileNameToDelete('');
+  }
+
+  const onDeleteStatement = () => {
+    deleteRow(statementIdToDelete);
+    onCloseDeleteModal();
+  }
+
   if (statements.length == 0) {
     return (
       <Section>
@@ -68,11 +91,11 @@ export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, re
                       {loadingAnalysis && loadingStatementId === String(row.id) ? (
                         <CircularProgress size={24} />
                       ) : (
-                      <IconButton onClick={() => reanalyse(String(row.id))} disabled={loadingSummary}><AutorenewIcon /></IconButton>
+                        <IconButton onClick={() => reanalyse(String(row.id))} disabled={loadingSummary}><AutorenewIcon /></IconButton>
                       )}
-                      </Tooltip>
+                    </Tooltip>
                     <Tooltip title="Delete Statement" placement="top">
-                      <IconButton color="error" onClick={() => deleteRow(String(row.id))} disabled={loadingSummary}><DeleteRoundedIcon /></IconButton>
+                      <IconButton color="error" onClick={() => onOpenDeleteModal(String(row.id))} disabled={loadingSummary}><DeleteRoundedIcon /></IconButton>
                     </Tooltip>
                   </Box>
                 </TableCell>
@@ -81,6 +104,7 @@ export const StatementTableSection = ({ statements, viewTripSummary, viewPdf, re
           </TableBody>
         </Table>
       </TableContainer>
+      <DeleteModal onClose={() => setDeleteModalOpen(false)} open={deleteModalOpen} onDelete={onDeleteStatement} fileName={statementFileNameToDelete} />
     </Section>
   )
 }

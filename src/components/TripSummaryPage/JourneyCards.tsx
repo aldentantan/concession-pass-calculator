@@ -25,7 +25,7 @@ export const JourneyCards = ({ journeys }: JourneyCardsProps) => {
             </Box>
           </Box>
 
-          <TripRows trips={journey.trips} />
+          <TripRows trips={journey.trips} tripIssues={journey.tripIssues}/>
         </Paper>
       ))}
     </Box>

@@ -24,6 +24,7 @@ export interface Journey {
     startLocation: string;
     endLocation: string;
     trips: Trip[];
+    tripIssues: TripIssue[];
     mrtDistance: number;
     busDistance: number;
     totalDistance: number;
@@ -52,4 +53,12 @@ export interface Statement {
   statement_month: string;
   statement_year: number;
   created_at: string;
+}
+
+export interface TripIssue {
+  code: 'BUS_STOP_NOT_FOUND' | 'MRT_STATION_NOT_FOUND';
+  message: string;
+  tripIndex: number;
+  busService?: string;
+  unknownStopName: string;
 }

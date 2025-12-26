@@ -31,6 +31,11 @@ const paletteTheme = createTheme({
         primary: '#eff6ff',
         secondary: '#f0fdfa',
         error: '#ffcdd2'
+    },
+    warning: {
+      main: '#ff9800',
+      light: '#fff3e0',
+      dark: '#f57c00'
     }
   },
   spacing: 8,

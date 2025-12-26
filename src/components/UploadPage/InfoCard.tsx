@@ -13,9 +13,9 @@ export const InfoCard = ({ icon: Icon, title, text }: InfoCardProps) => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            p: 4,
+            p: { xs: 2, md: 3 },
             backgroundColor: '#f9fafb',
-            width: '25%',
+            width: { xs: 'calc(50% - 8px)', md: 'calc(25% - 12px)' },
             gap: 1,
             boxShadow: 0
         }}>

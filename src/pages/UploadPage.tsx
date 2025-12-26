@@ -72,7 +72,7 @@ export default function UploadPage(): React.JSX.Element {
         {/* Header */}
         <Box>
           <Typography variant='h2' sx={{ mb: 2.5 }}>
-            Upload Your SimplyGo Statement
+            Upload Your SimplyGo PDF
           </Typography>
           <Typography variant='body1'>
             We'll extract your trips, fares, and distances automatically and recommend you the best concession pass based on your travel patterns.

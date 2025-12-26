@@ -14,8 +14,8 @@ const InfoItems = [
     },
     {
         icon: ShieldOutlinedIcon,
-        title: "Secure",
-        text: "Your data is not stored anywhere on our servers or databases"
+        title: "Privacy",
+        text: "Your data is stored securely and used only to generate your concession pass recommendation"
     },
     {
         icon: PersonOutlineOutlinedIcon,
@@ -35,6 +35,7 @@ export const InfoSection = () => {
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'row',
+                flexWrap: 'wrap',
                 gap: 2
             }}>
                 {InfoItems.map((item, index) => (

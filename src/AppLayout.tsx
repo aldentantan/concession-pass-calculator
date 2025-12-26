@@ -12,7 +12,7 @@ function AppLayout() {
         }}>
             <Header />
             <Box sx={{
-                width: '80%',
+                width: { xs: '100%', md: '80%' },
                 p: 2
             }}>
                 <Outlet />

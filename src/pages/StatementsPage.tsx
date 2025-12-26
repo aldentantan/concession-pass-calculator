@@ -5,9 +5,12 @@ import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStat
 import { useNavigate } from "react-router-dom";
 import { useJourneyContext } from "../contexts/JourneyContext";
 import { StatementTableSection } from "../components/StatementsPage/StatementTableSection";
-import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
-import type { Statement } from "../types";
 import { uploadAndProcessPdf } from "../services/pdfUploadService";
+import { useIsMobile } from "../hooks/useIsMobile";
+import type { Statement } from "../types";
+
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
+import { StatementCardList } from "../components/StatementsPage/StatementCardList";
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
@@ -17,6 +20,7 @@ export default function StatementsPage() {
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
   const [uploadingNew, setUploadingNew] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
   const { setJourneys, setFares } = useJourneyContext();
   const navigate = useNavigate();
 
@@ -106,20 +110,26 @@ export default function StatementsPage() {
         style={{ display: 'none' }}
       />
       <SectionHeader title="My Transport Statements" />
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Typography variant="body1">
-          View and manage your uploaded SimplyGo statements
-        </Typography>
-        <Button
-          sx={{ pt: 1, pb: 1, pl: 2, pr: 2 }}
-          startIcon={uploadingNew ? <CircularProgress size={20} color="inherit" /> : <FileUploadRoundedIcon />}
-          onClick={handleUploadNewClick}
-          disabled={uploadingNew}
-        >
-          {uploadingNew ? 'Uploading...' : 'Upload New'}
-        </Button>
-      </Box>
-      <StatementTableSection statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId}/>
+      {isMobile ? (
+        <StatementCardList statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId} />
+      ) : (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <Typography variant="body1">
+              View and manage your uploaded SimplyGo statements
+            </Typography>
+            <Button
+              sx={{ pt: 1, pb: 1, pl: 2, pr: 2 }}
+              startIcon={uploadingNew ? <CircularProgress size={20} color="inherit" /> : <FileUploadRoundedIcon />}
+              onClick={handleUploadNewClick}
+              disabled={uploadingNew}
+            >
+              {uploadingNew ? 'Uploading...' : 'Upload New'}
+            </Button>
+          </Box>
+          <StatementTableSection statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId} />
+        </>
+      )}
     </Box>
   )
 }

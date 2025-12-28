@@ -63,8 +63,7 @@ export default function SignUpPage() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '45%', gap: 2 }}>
-        <Typography variant='h1'>Concession Pass Calculator</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: { xs: '100%', md: '45%' }, gap: 2 }}>
         <Typography variant='h2'>Sign Up To Find Your Ideal Concession Pass</Typography>
         <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, p: 4 }}>
           <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>

@@ -20,8 +20,7 @@ export default function ForgetPasswordPage() {
   // Show login form
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: '45%', gap: 2 }}>
-        <Typography variant='h1'>Concession Pass Calculator</Typography>
+      <Box sx={{ display: 'flex', flexDirection: 'column', width: { xs: '100%', md: '45%' }, gap: 2 }}>
         <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, p: 4 }}>
           <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
             <Typography variant='h1'>Forget Password</Typography>

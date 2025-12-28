@@ -1,4 +1,4 @@
-import { Box, Paper, Typography, Grid } from '@mui/material';
+import { Paper, Typography, Grid } from '@mui/material';
 import { Section } from '../Section';
 import AttachMoneyOutlinedIcon from '@mui/icons-material/AttachMoneyOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';

@@ -1,4 +1,4 @@
-import { Box, Typography, Drawer, IconButton, Icon } from '@mui/material';
+import { Box, Typography, Drawer, IconButton } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '../hooks/useIsMobile';

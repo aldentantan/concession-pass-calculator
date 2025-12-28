@@ -51,11 +51,11 @@ export const Header = () => {
       top: 0,
       width: '100%',
       height: '64px',
-      padding: '16px',
+      padding: '8px',
       bgcolor: 'background.default',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: { xs: 'flex-start', md: 'space-between' },
       borderBottom: '2px solid #e5e7eb',
     }}>
       {isMobile && session && !isResetPasswordPage &&
@@ -68,7 +68,7 @@ export const Header = () => {
           </Drawer>
         </>
       }
-      <Typography variant="h1">
+      <Typography variant="h1" sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', width: 'max-content' }}>
         Concession Pass Calculator
       </Typography>
       {isMobile ? null : (

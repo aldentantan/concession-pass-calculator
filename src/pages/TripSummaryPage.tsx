@@ -8,33 +8,37 @@ import { RecommendationSection } from '../components/TripSummaryPage/Recommendat
 import { useState, useMemo } from 'react';
 import ArrowBackIosOutlinedIcon from '@mui/icons-material/ArrowBackIosOutlined';
 import { useJourneyContext } from '../contexts/JourneyContext';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { RecommendationSectionMobile } from '../components/TripSummaryPage/RecommendationSectionMobile';
+import { PassComparisonSectionMobile } from '../components/TripSummaryPage/PassComparisonSectionMobile';
+import { TripReviewSectionMobile } from '../components/TripSummaryPage/TripReviewSectionMobile';
 
 const PASS_OPTIONS: ConcessionPass[] = [
-    {
-      id: 'no-pass',
-      label: 'No Pass',
-      monthlyPrice: 0,
-      description: 'Your current fares, excluding concession pass price (if you had purchased one).',
-    },
-    {
-      id: 'undergrad-bus',
-      label: 'Undergrad Bus',
-      monthlyPrice: 55.50,
-      description: 'Unlimited bus travel. Best if you primarily use buses for your commute.',
-    },
-    {
-      id: 'undergrad-mrt',
-      label: 'Undergrad MRT',
-      monthlyPrice: 48,
-      description: 'Unlimited MRT/LRT travel. Best if you primarily use MRT/LRT for your commute.',
-    },
-    {
-      id: 'undergrad-hybrid',
-      label: 'Undergrad Hybrid',
-      monthlyPrice: 81,
-      description: 'Unlimited bus and MRT/LRT travel. Best value for mixed-mode commuters.',
-    },
-  ];
+  {
+    id: 'no-pass',
+    label: 'No Pass',
+    monthlyPrice: 0,
+    description: 'Your current fares, excluding concession pass price (if you had purchased one).',
+  },
+  {
+    id: 'undergrad-bus',
+    label: 'Undergrad Bus',
+    monthlyPrice: 55.50,
+    description: 'Unlimited bus travel. Best if you primarily use buses for your commute.',
+  },
+  {
+    id: 'undergrad-mrt',
+    label: 'Undergrad MRT',
+    monthlyPrice: 48,
+    description: 'Unlimited MRT/LRT travel. Best if you primarily use MRT/LRT for your commute.',
+  },
+  {
+    id: 'undergrad-hybrid',
+    label: 'Undergrad Hybrid',
+    monthlyPrice: 81,
+    description: 'Unlimited bus and MRT/LRT travel. Best value for mixed-mode commuters.',
+  },
+];
 
 export default function TripSummaryPage() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
@@ -90,19 +94,43 @@ export default function TripSummaryPage() {
         mrtDistance={mrtDistance}
       />
 
-      <SectionHeader title="Trip Review" />
-      <TripReviewSection journeys={journeys} />
+      {useIsMobile() ?
+        <>
+          {/* Concession Pass Recommendation Panel */}
+          <RecommendationSectionMobile totalFare={totalFare} bestPass={bestPass} passOptions={passComparison} />
 
-      {/* Concession Pass Savings Panel */}
-      <SectionHeader title="Concession Pass Comparison" />
-      <PassComparisonSection
-        passOptions={PASS_OPTIONS}
-        selectedPassId={selectedPassId}
-        onPassChange={setSelectedPassId}
-        selectedPassComparison={selectedPassComparison}
-      />
+          {/* Concession Pass Savings Panel */}
+          <SectionHeader title="Concession Pass Comparison" />
+          <PassComparisonSectionMobile
+            passOptions={PASS_OPTIONS}
+            selectedPassId={selectedPassId}
+            onPassChange={setSelectedPassId}
+            selectedPassComparison={selectedPassComparison}
+          />
 
-      <RecommendationSection totalFare={totalFare} bestPass={bestPass} passOptions={passComparison} />
+          {/* Trip Review Panel */}
+          <SectionHeader title="Your Trip Review" />
+          <TripReviewSectionMobile journeys={journeys} />
+        </>
+        :
+        <>
+          {/* Trip Review Panel */}
+          <SectionHeader title="Your Trip Review" />
+          <TripReviewSection journeys={journeys} />
+
+          {/* Concession Pass Savings Panel */}
+          <SectionHeader title="Concession Pass Comparison" />
+          <PassComparisonSection
+            passOptions={PASS_OPTIONS}
+            selectedPassId={selectedPassId}
+            onPassChange={setSelectedPassId}
+            selectedPassComparison={selectedPassComparison}
+          />
+
+          {/* Concession Pass Recommendation Panel */}
+          <RecommendationSection totalFare={totalFare} bestPass={bestPass} passOptions={passComparison} />
+        </>
+      }
 
       {/* Navigation */}
       <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>

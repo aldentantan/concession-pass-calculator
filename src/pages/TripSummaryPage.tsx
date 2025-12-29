@@ -18,7 +18,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
     id: 'no-pass',
     label: 'No Pass',
     monthlyPrice: 0,
-    description: 'Your current fares, excluding concession pass price (if you had purchased one).',
+    description: `Your projected fare based on this month's travel patterns, calculated with the new fares effective from 27 Dec 2025.`,
   },
   {
     id: 'undergrad-bus',
@@ -44,7 +44,8 @@ export default function TripSummaryPage() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
   const { journeys, fares: calculatedFares } = useJourneyContext();
 
-  const totalFare = journeys.reduce((sum, journey) => sum + journey.totalFare, 0);
+  const { totalFareWithNewPrices } = calculatedFares;
+  const totalFare = journeys.reduce((sum, journey) => sum + journey.totalFare, 0); // Actual fare paid
   const numTrips = journeys.reduce((sum) => sum + 1, 0);
   const busDistance = journeys.reduce((sum, journey) => sum + journey.busDistance, 0);
   const mrtDistance = journeys.reduce((sum, journey) => sum + journey.mrtDistance, 0);
@@ -56,7 +57,7 @@ export default function TripSummaryPage() {
       let cost: number;
 
       if (pass.id === 'no-pass') {
-        cost = totalFare;
+        cost = totalFareWithNewPrices;
       } else if (pass.id === 'undergrad-bus') {
         cost = totalFareExcludingBus + pass.monthlyPrice;
       } else if (pass.id === 'undergrad-mrt') {
@@ -65,7 +66,7 @@ export default function TripSummaryPage() {
         cost = pass.monthlyPrice;
       }
 
-      const savings = pass.id === 'no-pass' ? 0 : totalFare - cost;
+      const savings = pass.id === 'no-pass' ? 0 : totalFareWithNewPrices - cost;
 
       return {
         pass,
@@ -74,7 +75,7 @@ export default function TripSummaryPage() {
         isSavingMoney: savings > 0,
       };
     });
-  }, [totalFare, calculatedFares]);
+  }, [totalFareWithNewPrices, calculatedFares]);
 
   const bestPass = useMemo(() => {
     return passComparison.reduce((best, current) =>

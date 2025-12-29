@@ -49,14 +49,16 @@ export const RecommendationSection = ({ totalFare, bestPass, passOptions }: Reco
 
           <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: '#4b62a5', borderRadius: 1, p: 2, gap: 1, height: '100%', width: '45%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #99a1af', width: '100%', pb: 1 }}>
-              <Typography variant='body2'>Current Spending</Typography>
+              <Typography variant='body2'>Actual Spending for this Month</Typography>
               <Typography variant='body2' sx={{ color: '#ffffff' }}>${totalFare.toFixed(2)}</Typography>
             </Box>
+            <Typography variant='body2' sx={{ color: '#ffffff' }}>All calculations below are based on new fares effective from 27 Dec 2025.</Typography>
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pt: 1 }}>
-            <Typography variant='body2'>
-              With {bestPass.pass.label}
-            </Typography>
-            <Typography variant='body2' sx={{ color: '#ffffff' }}>${bestPass.cost.toFixed(2)}</Typography>
+              <Typography variant='body2'>
+                With {bestPass.pass.label}
+              </Typography>
+              <Typography variant='body2' sx={{ color: '#ffffff' }}>${bestPass.cost.toFixed(2)}</Typography>
             </Box>
             {passesExceptBest.map((passOption) => (
               <Box key={passOption.pass.id} sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>

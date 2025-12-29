@@ -28,7 +28,7 @@ export const SummaryStatsSection = ({ totalFare, numTrips, busDistance, mrtDista
             <AttachMoneyOutlinedIcon sx={{ fontSize: 36, color: 'primary.main', backgroundColor: 'background.primary', borderRadius: 1, mb: 1 }} />
             <Typography variant='h3' sx={{ fontWeight: 400 }}>${totalFare.toFixed(2)}</Typography>
             <Typography variant='body2'>
-              Total Fare
+              Total Fare Paid
             </Typography>
           </Paper>
         </Grid>

@@ -13,6 +13,7 @@ interface JourneyContextType {
 const JourneyContext = createContext<JourneyContextType | undefined>(undefined);
 
 const defaultFares: ConcessionFareResponse = {
+  totalFareWithNewPrices: 0,
   totalFareExcludingBus: 0,
   totalFareExcludingMrt: 0,
 };

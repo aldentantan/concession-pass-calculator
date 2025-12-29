@@ -39,7 +39,7 @@ export const PassComparisonSection = ({ passOptions, selectedPassId, onPassChang
         </ToggleButtonGroup>
 
         <Box sx={{ display: 'flex', flexDirection: 'row', p: 4, pr: 8, justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '70%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '80%' }}>
             <Typography variant='body1' sx={{ mb: 0.75 }}>
               Monthly Cost
             </Typography>

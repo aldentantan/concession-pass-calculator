@@ -15,6 +15,9 @@ export const Header = ({ toggleDrawer }: HeaderProps) => {
   const isResetPasswordPage = location.pathname === '/reset-password';
   const isMobile = useIsMobile();
 
+  const showDrawer = session && !isResetPasswordPage;
+  const desktopDrawerWidth = 300;
+
   return (
     <Box sx={{
       position: 'sticky',
@@ -25,17 +28,29 @@ export const Header = ({ toggleDrawer }: HeaderProps) => {
       bgcolor: 'background.default',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: { xs: 'flex-start', md: 'space-between' },
+      justifyContent: 'center',
       borderBottom: '2px solid #e5e7eb',
+      zIndex: 1200,
     }}>
-      {isMobile && session && !isResetPasswordPage &&
-        <IconButton onClick={toggleDrawer}>
+      {isMobile && showDrawer && (
+        <IconButton
+          onClick={toggleDrawer}
+          sx={{ position: 'absolute', left: 8 }}
+        >
           <MenuRoundedIcon sx={{ fontSize: '24px', color: 'black' }} />
         </IconButton>
-      }
-      <Typography variant="h1" sx={{ position: 'absolute', left: '50%', transform: { xs: 'translateX(-50%)', md: 'translateX(calc(-50% + 150px))' }, width: 'max-content' }}>
+      )}
+      <Typography
+        variant="h1"
+        sx={{
+          marginLeft: {
+            xs: 0,
+            md: showDrawer ? `${desktopDrawerWidth}px` : 0
+          }
+        }}
+      >
         Concession Pass Calculator
       </Typography>
     </Box>
-  )
+  );
 }

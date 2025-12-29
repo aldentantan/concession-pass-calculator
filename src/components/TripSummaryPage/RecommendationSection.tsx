@@ -47,7 +47,7 @@ export const RecommendationSection = ({ totalFare, bestPass, passOptions }: Reco
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: '#4b62a5', borderRadius: 1, p: 2, gap: 1, height: '100%', width: '45%' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: '#4b62a5', borderRadius: 1, p: 2, gap: 1, height: '100%', width: '50%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #99a1af', width: '100%', pb: 1 }}>
               <Typography variant='body2'>Actual Spending for this Month</Typography>
               <Typography variant='body2' sx={{ color: '#ffffff' }}>${totalFare.toFixed(2)}</Typography>

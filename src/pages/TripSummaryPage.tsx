@@ -86,7 +86,7 @@ export default function TripSummaryPage() {
   const selectedPassComparison = passComparison.find(p => p.pass.id === selectedPassId)!;
 
   return (
-    <Box sx={{ maxWidth: '80vw', margin: '0 auto' }}>
+    <Box sx={{ minHeight: '100vh' }}>
       <SectionHeader title="Your Travel Summary" />
       <SummaryStatsSection
         totalFare={totalFare}

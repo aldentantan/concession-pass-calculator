@@ -24,8 +24,8 @@ const InfoItems = [
     },
     {
         icon: FlashOnOutlinedIcon,
-        title: "Fast",
-        text: "Get your concession pass recommendation in seconds"
+        title: "Forward-Looking",
+        text: "Project your monthly fares based on the recent fare changes effective from 27 Dec 2025"
     }
 ]
 

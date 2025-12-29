@@ -22,7 +22,7 @@ export const RecommendationSectionMobile = ({ totalFare, bestPass, passOptions }
 
   return (
     <Section>
-      <Paper sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%', backgroundColor: '#1e3c96', p: 4, borderRadius: 2 }}>
+      <Paper sx={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%', backgroundColor: '#1e3c96', p: 3, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
           <WorkspacePremiumOutlinedIcon sx={{ fontSize: 36, backgroundColor: '#4b62a5', color: '#ffffff', borderRadius: 1 }} />
           <Typography variant='h3' sx={{ fontWeight: 400, color: '#ffffff' }}>Recommended Pass For You</Typography>
@@ -44,9 +44,10 @@ export const RecommendationSectionMobile = ({ totalFare, bestPass, passOptions }
 
         <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: '#4b62a5', borderRadius: 1, p: 2, gap: 1, height: '100%' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #99a1af', width: '100%', pb: 1 }}>
-            <Typography variant='body2'>Current Spending</Typography>
+            <Typography variant='body2'>Actual Spending this Month</Typography>
             <Typography variant='body2' sx={{ color: '#ffffff' }}>${totalFare.toFixed(2)}</Typography>
           </Box>
+          <Typography variant='body2' sx={{ color: '#ffffff' }}>All calculations below are based on new fares effective from 27 Dec 2025.</Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', pt: 1 }}>
             <Typography variant='body2'>
               With {bestPass.pass.label}

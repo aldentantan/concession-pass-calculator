@@ -47,7 +47,7 @@ export const PassComparisonSection = ({ passOptions, selectedPassId, onPassChang
               ${selectedPassComparison.cost.toFixed(2)}
               {selectedPassId !== 'no-pass' ? ` (The pass costs $${selectedPassComparison.pass.monthlyPrice.toFixed(2)}/month.)` : ''}
             </Typography>
-            <Typography variant='body1'>
+            <Typography variant='body1' textAlign='left'>
               {selectedPassComparison.pass.description}
             </Typography>
           </Box>

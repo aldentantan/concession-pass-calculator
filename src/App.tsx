@@ -14,6 +14,7 @@ import SignUpPage from './pages/SignUpPage';
 import ForgetPasswordPage from './pages/ForgetPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import StatementsPage from './pages/StatementsPage';
+import SignUpSuccessPage from './pages/SignUpSuccessPage';
 
 function App() {
   const router = createBrowserRouter([
@@ -23,6 +24,7 @@ function App() {
       children: [
         { index: true, element: <LoginPage /> },
         { path: "signup", element: <SignUpPage /> },
+        { path: "signup-success", element: <SignUpSuccessPage /> },
         { path: "forget-password", element: <ForgetPasswordPage /> },
         { path: "reset-password", element: <ProtectedRoute><ResetPasswordPage /></ProtectedRoute> },
         { path: "upload", element: <ProtectedRoute><UploadPage /></ProtectedRoute> },

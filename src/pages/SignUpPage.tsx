@@ -3,7 +3,7 @@ import { supabase } from '../supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { Paper, Typography, Button, TextField, Box, InputAdornment } from '@mui/material';
+import { Paper, Typography, Button, TextField, Box, InputAdornment, CircularProgress } from '@mui/material';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -15,11 +15,13 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
 
   const { session, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleSignUp = async (): Promise<void> => {
+    setSignupLoading(true);
     const { error } = await supabase.auth.signUp({
       email: email,
       password: password,
@@ -30,8 +32,9 @@ export default function SignUpPage() {
     if (error) {
       alert(error.message);
     } else {
-      alert("A confirmation email will be sent to you shortly, click on the link to complete your sign up.");
+      navigate('/signup-success');
     }
+    setSignupLoading(false);
   };
 
   // Show verification state
@@ -41,17 +44,6 @@ export default function SignUpPage() {
         <h1>Authentication</h1>
         <p>Confirming your sign up...</p>
         <p>Loading...</p>
-      </div>
-    );
-  }
-
-  // Show auth success (briefly before session loads)
-  if (loading && session) {
-    return (
-      <div>
-        <h1>Authentication</h1>
-        <p>✓ Authentication successful!</p>
-        <p>Loading your account...</p>
       </div>
     );
   }
@@ -169,9 +161,9 @@ export default function SignUpPage() {
           <Button
             onClick={handleSignUp}
             sx={{ width: '100%' }}
-            disabled={!email || !password || !confirmPassword || (password !== confirmPassword)}
+            disabled={!email || !password || !confirmPassword || (password !== confirmPassword) || signupLoading}
           >
-            Sign Up
+            {signupLoading ? <CircularProgress size={24} /> : "Sign Up"}
           </Button>
         </Paper>
         <Typography>Already have an account? <Link to="/" style={{ color: '#14b7a5' }}>Sign In</Link></Typography>

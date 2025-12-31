@@ -2,19 +2,23 @@ import { useState } from "react";
 import { supabase } from '../supabase';
 import { Link } from 'react-router';
 import { Paper, Typography, Button, TextField, Box, InputAdornment, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 
 export default function ForgetPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleForgetPassword = async (): Promise<void> => {
     setLoading(true)
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
-    alert('If an account with that email exists in our database, a password reset link will be sent to your email shortly.');
+    alert('If an account with that email exists in our database, a password reset link will be sent to your email in the next 5 minutes.');
     setLoading(false)
+    navigate('/');
   };
 
   // Show login form

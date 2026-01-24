@@ -24,12 +24,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = async (): Promise<void> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/upload`,
-      },
-    });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
     if (error) alert(error.message);
   };
 

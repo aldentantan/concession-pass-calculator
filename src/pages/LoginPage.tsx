@@ -1,13 +1,14 @@
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import GoogleIcon from '@mui/icons-material/Google';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import { Box, Button, Divider, InputAdornment, Paper, TextField, Typography } from '@mui/material';
 import { useState } from "react";
-import { supabase } from '../supabase';
-import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { Paper, Typography, Button, TextField, Box, InputAdornment } from '@mui/material';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,6 +20,16 @@ export default function LoginPage() {
 
   const handleSignIn = async (): Promise<void> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+  };
+
+  const handleGoogleSignIn = async (): Promise<void> => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/upload`,
+      },
+    });
     if (error) alert(error.message);
   };
 
@@ -54,13 +65,15 @@ export default function LoginPage() {
 
   // Show login form
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
       <Box sx={{ display: 'flex', flexDirection: 'column', width: { xs: '100%', md: '45%' }, gap: 2 }}>
         <Typography variant='h2'>Sign In To Find Your Ideal Concession Pass</Typography>
-        <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, p: 4 }}>
+        <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, p: 4 }}>
           <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
             <Typography variant='h1'>Sign In</Typography>
           </Box>
+          <Divider sx={{ width: '100%' }} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', gap: 2, alignItems: 'flex-start' }}>
           <Typography variant="h3">Email Address</Typography>
           <TextField
             placeholder='johndoe@gmail.com'
@@ -111,6 +124,7 @@ export default function LoginPage() {
               }
             }}
           />
+          </Box>
           <Box sx={{ display: 'flex', width: '100%', justifyContent: 'flex-end' }}>
             <Link to="/forget-password" style={{ color: '#14b7a5' }}>Forgot Password?</Link>
           </Box>
@@ -120,6 +134,13 @@ export default function LoginPage() {
             disabled={!email || !password}
           >
             Sign In
+          </Button>
+          <Divider sx={{ width: '100%', my: 1 }}>OR</Divider>
+          <Button
+            onClick={handleGoogleSignIn}
+            startIcon={<GoogleIcon />}
+          >
+            Sign In with Google
           </Button>
         </Paper>
         <Typography>Don't have an account? <Link to="/signup" style={{ color: '#14b7a5' }}>Sign Up</Link></Typography>

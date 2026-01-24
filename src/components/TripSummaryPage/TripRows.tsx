@@ -1,7 +1,7 @@
-import { Box, Typography, Tooltip } from '@mui/material';
 import AirportShuttleOutlinedIcon from '@mui/icons-material/AirportShuttleOutlined';
 import TrainOutlinedIcon from '@mui/icons-material/TrainOutlined';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import { Box, Tooltip, Typography } from '@mui/material';
 import type { Trip, TripIssue } from '../../types';
 
 interface TripRowsProps {

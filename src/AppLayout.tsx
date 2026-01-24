@@ -24,7 +24,7 @@ function AppLayout() {
                 {!hideDrawer && <DrawerSidebar mobileDrawerOpen={drawerOpen} handleDrawerClose={toggleDrawer} />}
                 <Box sx={{
                     flexGrow: 1,
-                    paddingY: { xs: 2, md: 2 },
+                    paddingY: { xs: 2, md: 4 },
                     paddingX: { xs: 2, md: 8 },
                     overflow: 'auto',
                     display: 'flex',

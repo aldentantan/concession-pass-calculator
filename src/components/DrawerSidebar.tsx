@@ -16,7 +16,7 @@ export const DrawerSidebar = ({ mobileDrawerOpen, handleDrawerClose }: DrawerSid
   const { session, signOut } = useAuth();
 
   const mobileDrawerWidth = 240;
-  const desktopDrawerWidth = 300;
+  const desktopDrawerWidth = 250;
 
   const drawerListItems = [
     { text: 'Upload PDF', link: '/upload', icon: <FileUploadRoundedIcon /> },

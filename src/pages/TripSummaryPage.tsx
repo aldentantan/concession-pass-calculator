@@ -1,4 +1,4 @@
-import { Box, Button, Paper, Typography, Alert, Chip } from '@mui/material';
+import { Box, Button, Paper, Typography, Alert } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -12,7 +12,6 @@ import { RecommendationSection } from '../components/TripSummaryPage/Recommendat
 import { useState, useMemo, useEffect } from 'react';
 import ArrowBackIosOutlinedIcon from '@mui/icons-material/ArrowBackIosOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useJourneyContext } from '../contexts/JourneyContext';
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -20,7 +19,6 @@ import { RecommendationSectionMobile } from '../components/TripSummaryPage/Recom
 import { PassComparisonSectionMobile } from '../components/TripSummaryPage/PassComparisonSectionMobile';
 import { TripReviewSectionMobile } from '../components/TripSummaryPage/TripReviewSectionMobile';
 import { detectCoverageGaps } from '../utils/detectCoverageGaps';
-import { calculateWindowComparison } from '../utils/calculateWindowComparison';
 import { fetchTripsInDateRange } from '../services/statementsService';
 import type { TripWithMetadata } from '../types';
 
@@ -53,7 +51,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
 
 export default function TripSummaryPage() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
-  const { journeys, fares: calculatedFares, statements } = useJourneyContext();
+  const { journeys, statements } = useJourneyContext();
   const isMobile = useIsMobile(); // Call hook at top level, not inside conditional
 
   // Date picker state for 30-day window selection
@@ -77,11 +75,6 @@ export default function TripSummaryPage() {
       .sort((a, b) => a.localeCompare(b));
     return dayjs(sortedDates[0]);
   }, [journeys]);
-
-  // Detect coverage gaps when dates or statements change
-  const coverageResult = useMemo(() => {
-    return detectCoverageGaps(statements, selectedStartDate, selectedEndDate);
-  }, [statements, selectedStartDate, selectedEndDate]);
 
   // Manual function to fetch trips for selected window
   const loadWindowTrips = async () => {
@@ -357,13 +350,13 @@ export default function TripSummaryPage() {
                 />
 
                 {/* Trip Review Panel */}
-                <SectionHeader title="Your Trip Review" />
+                <SectionHeader title={`Your Trip Review For The Month`} />
                 <TripReviewSectionMobile journeys={journeys} />
               </>
               :
               <>
                 {/* Trip Review Panel */}
-                <SectionHeader title="Your Trip Review" />
+                <SectionHeader title={`Your Trip Review For The Month`} />
                 <TripReviewSection journeys={journeys} />
 
                 {/* Concession Pass Savings Panel */}

@@ -21,7 +21,7 @@ export default function StatementsPage() {
   const [uploadingNew, setUploadingNew] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
-  const { setJourneys, setFares } = useJourneyContext();
+  const { setJourneys, setFares, setStatements: setContextStatements } = useJourneyContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export default function StatementsPage() {
     const { journeys, fares } = await viewStatementTripSummary(statementId);
     setJourneys(journeys);
     setFares(fares);
+    setContextStatements(statements); // Pass statements for coverage detection
     navigate('/trip-summary');
     setLoadingSummary(false);
     setLoadingStatementId(undefined);
@@ -56,6 +57,7 @@ export default function StatementsPage() {
     const { journeys, fares } = await reanalyseStatement(statementId);
     setJourneys(journeys);
     setFares(fares);
+    setContextStatements(statements); // Pass statements for coverage detection
     navigate('/trip-summary');
     setLoadingAnalysis(false);
     setLoadingStatementId(undefined);
@@ -86,6 +88,10 @@ export default function StatementsPage() {
       const { journeys, fares } = await uploadAndProcessPdf(file);
       setJourneys(journeys);
       setFares(fares);
+      // Refresh statements list to include new upload
+      const res = await fetchStatements();
+      setStatements(res);
+      setContextStatements(res);
       navigate('/trip-summary');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to parse PDF');

@@ -18,7 +18,6 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { RecommendationSectionMobile } from '../components/TripSummaryPage/RecommendationSectionMobile';
 import { PassComparisonSectionMobile } from '../components/TripSummaryPage/PassComparisonSectionMobile';
 import { TripReviewSectionMobile } from '../components/TripSummaryPage/TripReviewSectionMobile';
-import { detectCoverageGaps } from '../utils/detectCoverageGaps';
 import { fetchTripsInDateRange } from '../services/statementsService';
 import type { TripWithMetadata } from '../types';
 
@@ -51,7 +50,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
 
 export default function TripSummaryPage() {
   const [selectedPassId, setSelectedPassId] = useState<string>('no-pass');
-  const { journeys, statements } = useJourneyContext();
+  const { journeys } = useJourneyContext();
   const isMobile = useIsMobile(); // Call hook at top level, not inside conditional
 
   // Date picker state for 30-day window selection

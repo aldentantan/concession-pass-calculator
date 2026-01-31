@@ -76,3 +76,10 @@ export interface TripWithMetadata {
   statement_id: string;
   statement_month: string;
 }
+
+export interface DayGroupedTrips {
+  date: string;
+  dayOfWeek: string;
+  trips: TripWithMetadata[];
+  totalFare: number;
+}

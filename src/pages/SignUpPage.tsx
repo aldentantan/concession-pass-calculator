@@ -1,13 +1,11 @@
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { useState } from "react";
-import { supabase } from '../supabase';
-import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router';
 import { useNavigate } from 'react-router-dom';
-import { Paper, Typography, Button, TextField, Box, InputAdornment, CircularProgress } from '@mui/material';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../supabase';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -40,10 +38,14 @@ export default function SignUpPage() {
   // Show verification state
   if (loading) {
     return (
-      <div>
-        <h1>Authentication</h1>
-        <p>Confirming your sign up...</p>
-        <p>Loading...</p>
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="p-8 text-center max-w-md">
+          <h1 className="text-2xl font-semibold text-slate-900 mb-2">Authentication</h1>
+          <p className="text-slate-600 mb-2">Confirming your sign up...</p>
+          <div className="flex justify-center mt-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -54,120 +56,144 @@ export default function SignUpPage() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, mt: 2 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', width: { xs: '100%', md: '45%' }, gap: 2 }}>
-        <Typography variant='h2'>Sign Up To Find Your Ideal Concession Pass</Typography>
-        <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, p: 4 }}>
-          <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center' }}>
-            <Typography variant='h1'>Sign Up</Typography>
-          </Box>
-          <Typography variant="h3">Email Address</Typography>
-          <TextField
-            placeholder='johndoe@gmail.com'
-            fullWidth
-            onChange={(e) => setEmail(e.target.value.toLowerCase())}
-            slotProps={{
-              input: {
-                startAdornment:
-                  <InputAdornment position="start">
-                    <EmailOutlinedIcon sx={{ color: '#b3bac2' }} />
-                  </InputAdornment>,
-              }
-            }}
-          />
+    <div className="w-full">
+      <div className="max-w-lg mx-auto px-8 py-16">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl text-slate-900 font-semibold mb-3">Concession Pass Calculator</h2>
+        </div>
 
-          <Typography variant="h3">Password</Typography>
-          <TextField
-            placeholder='********'
-            fullWidth
-            type={showPassword ? 'text' : 'password'}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && email && password && confirmPassword) {
-                handleSignUp();
-              }
-            }}
-            onCut={(e) => { e.preventDefault() }}
-            onCopy={(e) => { e.preventDefault() }}
-            onPaste={(e) => { e.preventDefault() }}
-            slotProps={{
-              input: {
-                startAdornment:
-                  <InputAdornment position="start">
-                    <LockOutlinedIcon sx={{ color: '#b3bac2' }} />
-                  </InputAdornment>,
-                endAdornment:
-                  <InputAdornment position="end">
-                    {showPassword ? (
-                      <VisibilityOffOutlinedIcon
-                        sx={{ color: '#b3bac2', cursor: 'pointer' }}
-                        onClick={() => setShowPassword(false)}
-                      />
-                    ) : (
-                      <VisibilityOutlinedIcon
-                        sx={{ color: '#b3bac2', cursor: 'pointer' }}
-                        onClick={() => setShowPassword(true)}
-                      />
-                    )}
-                  </InputAdornment>
-              }
-            }}
-          />
+        <Card className="p-8 bg-white border-slate-200">
+          <div className="space-y-5">
+            {/* Email Field */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type="email"
+                  placeholder="johndoe@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow"
+                />
+              </div>
+            </div>
 
-          <Typography variant="h3">Confirm Password</Typography>
-          <TextField
-            placeholder='********'
-            fullWidth
-            type={showConfirmPassword ? 'text' : 'password'}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && email && password && confirmPassword) {
-                handleSignUp();
-              }
-            }}
-            onCut={(e) => { e.preventDefault() }}
-            onCopy={(e) => { e.preventDefault() }}
-            onPaste={(e) => { e.preventDefault() }}
-            slotProps={{
-              input: {
-                startAdornment:
-                  <InputAdornment position="start">
-                    <LockOutlinedIcon sx={{ color: '#b3bac2' }} />
-                  </InputAdornment>,
-                endAdornment:
-                  <InputAdornment position="end">
-                    {showConfirmPassword ? (
-                      <VisibilityOffOutlinedIcon
-                        sx={{ color: '#b3bac2', cursor: 'pointer' }}
-                        onClick={() => setShowConfirmPassword(false)}
-                      />
-                    ) : (
-                      <VisibilityOutlinedIcon
-                        sx={{ color: '#b3bac2', cursor: 'pointer' }}
-                        onClick={() => setShowConfirmPassword(true)}
-                      />
-                    )}
-                  </InputAdornment>
-              }
-            }}
-          />
+            {/* Password Field */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="********"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && email && password && confirmPassword) {
+                      handleSignUp();
+                    }
+                  }}
+                  onCut={(e) => { e.preventDefault() }}
+                  onCopy={(e) => { e.preventDefault() }}
+                  onPaste={(e) => { e.preventDefault() }}
+                  className="w-full pl-10 pr-12 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-          {confirmPassword !== "" && password !== confirmPassword && (
-            <Typography variant="subtitle2" color="error">
-              Passwords do not match.
-            </Typography>
-          )}
+            {/* Confirm Password Field */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="w-5 h-5 text-slate-400" />
+                </div>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="********"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && email && password && confirmPassword) {
+                      handleSignUp();
+                    }
+                  }}
+                  onCut={(e) => { e.preventDefault() }}
+                  onCopy={(e) => { e.preventDefault() }}
+                  onPaste={(e) => { e.preventDefault() }}
+                  className="w-full pl-10 pr-12 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-shadow"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-          <Button
-            onClick={handleSignUp}
-            sx={{ width: '100%' }}
-            disabled={!email || !password || !confirmPassword || (password !== confirmPassword) || signupLoading}
-          >
-            {signupLoading ? <CircularProgress size={24} /> : "Sign Up"}
-          </Button>
-        </Paper>
-        <Typography>Already have an account? <Link to="/" style={{ color: '#14b7a5' }}>Sign In</Link></Typography>
-      </Box>
-    </Box>
+            {/* Password Match Validation */}
+            {confirmPassword !== "" && password !== confirmPassword && (
+              <p className="text-sm text-red-600">
+                Passwords do not match.
+              </p>
+            )}
+
+            {/* Sign Up Button */}
+            <Button
+              onClick={handleSignUp}
+              disabled={!email || !password || !confirmPassword || (password !== confirmPassword) || signupLoading}
+              className="w-full"
+              size="lg"
+            >
+              {signupLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Signing Up...</span>
+                </div>
+              ) : (
+                'Sign Up'
+              )}
+            </Button>
+          </div>
+        </Card>
+
+        {/* Sign In Link */}
+        <p className="text-center mt-6 text-slate-600">
+          Already have an account?{' '}
+          <Link to="/" className="text-blue-600 hover:text-blue-700 font-medium">
+            Sign In
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }

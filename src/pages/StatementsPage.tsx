@@ -1,26 +1,17 @@
-import { SectionHeader } from "../components/SectionHeader";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
-import { useEffect, useState, useRef } from "react";
-import { fetchStatements, viewStatementTripSummary, createSignedLink, deleteStatement, reanalyseStatement } from "../services/statementsService";
+import { Calendar, Eye, FileText, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { useJourneyContext } from "../contexts/JourneyContext";
-import { StatementTableSection } from "../components/StatementsPage/StatementTableSection";
-import { uploadAndProcessPdf } from "../services/pdfUploadService";
-import { useIsMobile } from "../hooks/useIsMobile";
+import { deleteStatement, fetchStatements, viewStatementTripSummary } from "../services/statementsService";
 import type { Statement } from "../types";
-
-import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
-import { StatementCardList } from "../components/StatementsPage/StatementCardList";
 
 export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
   const [loadingPage, setLoadingPage] = useState<boolean>(true);
-  const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
-  const [loadingAnalysis, setLoadingAnalysis] = useState<boolean>(false);
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
-  const [uploadingNew, setUploadingNew] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isMobile = useIsMobile();
   const { setJourneys, setFares, setStatements: setContextStatements } = useJourneyContext();
   const navigate = useNavigate();
 
@@ -34,108 +25,120 @@ export default function StatementsPage() {
   }, []);
 
   const viewTripSummary = async (statementId: string) => {
-    setLoadingSummary(true);
     setLoadingStatementId(statementId);
     const { journeys, fares } = await viewStatementTripSummary(statementId);
     setJourneys(journeys);
     setFares(fares);
-    setContextStatements(statements); // Pass statements for coverage detection
+    setContextStatements(statements);
     navigate('/trip-summary');
-    setLoadingSummary(false);
     setLoadingStatementId(undefined);
   }
 
-  const viewPdf = async (statementId: string) => {
-    const response = await createSignedLink(statementId);
-    const statementSignedLink = response.signedLink;
-    window.open(statementSignedLink, '_blank');
-  }
-
-  const reanalyse = async (statementId: string) => {
-    setLoadingAnalysis(true);
-    setLoadingStatementId(statementId);
-    const { journeys, fares } = await reanalyseStatement(statementId);
-    setJourneys(journeys);
-    setFares(fares);
-    setContextStatements(statements); // Pass statements for coverage detection
-    navigate('/trip-summary');
-    setLoadingAnalysis(false);
-    setLoadingStatementId(undefined);
-  }
-
-  const deleteRow = async (statementId: string) => {
-    console.log("Deleting statement with ID:", statementId);
+  const handleDelete = async (statementId: string) => {
+    if (!confirm('Are you sure you want to delete this statement?')) return;
     await deleteStatement(statementId);
     const res = await fetchStatements();
     setStatements(res);
   };
 
-  const handleUploadNewClick = () => {
-    fileInputRef.current?.click();
+  const formatUploadDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'application/pdf') {
-      alert('Only PDF files are allowed. Please select your SimplyGo PDF.');
-      return;
-    }
-
-    setUploadingNew(true);
-    try {
-      const { journeys, fares } = await uploadAndProcessPdf(file);
-      setJourneys(journeys);
-      setFares(fares);
-      // Refresh statements list to include new upload
-      const res = await fetchStatements();
-      setStatements(res);
-      setContextStatements(res);
-      navigate('/trip-summary');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to parse PDF');
-    } finally {
-      setUploadingNew(false);
-      // Reset input so same file can be selected again
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  if (loadingPage) return <CircularProgress />;
+  if (loadingPage) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <Box>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/pdf"
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-      />
-      <SectionHeader title="My Transport Statements" />
-      {isMobile ? (
-        <StatementCardList statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId} />
-      ) : (
-        <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <Typography variant="body1">
-              View and manage your uploaded SimplyGo statements
-            </Typography>
-            <Button
-              sx={{ pt: 1, pb: 1, pl: 2, pr: 2 }}
-              startIcon={uploadingNew ? <CircularProgress size={20} color="inherit" /> : <FileUploadRoundedIcon />}
-              onClick={handleUploadNewClick}
-              disabled={uploadingNew}
-            >
-              {uploadingNew ? 'Uploading...' : 'Upload New'}
-            </Button>
-          </Box>
-          <StatementTableSection statements={statements} viewTripSummary={viewTripSummary} viewPdf={viewPdf} reanalyse={reanalyse} deleteRow={deleteRow} loadingSummary={loadingSummary} loadingAnalysis={loadingAnalysis} loadingStatementId={loadingStatementId} />
-        </>
-      )}
-    </Box>
-  )
+    <div className="w-full">
+      <div className="max-w-4xl mx-auto py-16">
+        {/* Header Section */}
+        <div className="mb-12">
+          <h2 className="text-3xl text-slate-900 mb-3">My Transport Statements</h2>
+          <p className="text-lg text-slate-600">
+            View and analyze your uploaded SimplyGo PDFs
+          </p>
+        </div>
+
+        {/* Statements List */}
+        <div className="space-y-4">
+          {statements.length === 0 ? (
+            <Card className="p-12 text-center bg-slate-50 border-slate-200">
+              <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+              <p className="text-lg text-slate-600 mb-2">No statements uploaded yet</p>
+              <p className="text-sm text-slate-500">Upload your first SimplyGo PDF to get started</p>
+            </Card>
+          ) : (
+            statements.map((statement) => (
+              <Card key={statement.id} className="p-6 bg-white border-slate-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-4">
+                  {/* PDF Icon */}
+                  <div className="flex-shrink-0 p-3 bg-slate-100 rounded-lg">
+                    <FileText className="w-6 h-6 text-slate-600" />
+                  </div>
+
+                  {/* Statement Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-lg text-slate-900 font-medium truncate">
+                        {statement.file_name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-sm text-slate-600 flex-shrink-0">
+                        <Calendar className="w-4 h-4" />
+                        <span>{statement.statement_month} {statement.statement_year}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-slate-500">
+                      Uploaded {formatUploadDate(statement.created_at)}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-8 flex-shrink-0">
+                    <div className="text-center">
+                      <p className="text-sm text-slate-600 mb-1">Total Fares</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        ${statement.total_fare.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-slate-600 mb-1">Journeys</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {statement.journey_count}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      onClick={() => viewTripSummary(statement.id.toString())}
+                      disabled={loadingStatementId === statement.id.toString()}
+                      className="gap-2"
+                    >
+                      <Eye className="w-4 h-4" />
+                      {loadingStatementId === statement.id.toString() ? 'Loading...' : 'Analyze'}
+                    </Button>
+                    <button
+                      onClick={() => handleDelete(statement.id.toString())}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete statement"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }

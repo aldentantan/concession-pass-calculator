@@ -51,19 +51,16 @@ export const theme = createTheme(paletteTheme, {
     h1: {
       fontFamily: '"Inter"', // Must explicitly override default MUI Typography font family
       fontSize: "1.5rem",
-      fontWeight: 500,
       color: paletteTheme.palette.primary.main,
     },
     h2: {
       fontFamily: '"Inter"',
       fontSize: "1.25rem",
-      fontWeight: 500,
       color: paletteTheme.palette.primary.main,
     },
     h3: {
       fontFamily: '"Inter"',
       fontSize: "1rem",
-      fontWeight: 500,
       color: paletteTheme.palette.primary.main,
     },
     h4: {

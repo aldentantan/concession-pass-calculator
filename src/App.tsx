@@ -1,20 +1,20 @@
 import { ThemeProvider } from '@mui/material/styles';
-import './App.css'
-import { theme } from './theme';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import './App.css';
 import AppLayout from './AppLayout';
-import { JourneyProvider } from './contexts/JourneyContext';
-import { AuthProvider } from './contexts/AuthContext';
-import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './contexts/AuthContext';
+import { TripProvider } from './contexts/TripContext';
+import { theme } from './theme';
 
-import UploadPage from './pages/UploadPage';
-import TripSummaryPage from './pages/TripSummaryPage';
-import LoginPage from './pages/LoginPage';
-import SignUpPage from './pages/SignUpPage';
 import ForgetPasswordPage from './pages/ForgetPasswordPage';
+import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import StatementsPage from './pages/StatementsPage';
+import SignUpPage from './pages/SignUpPage';
 import SignUpSuccessPage from './pages/SignUpSuccessPage';
+import StatementsPage from './pages/StatementsPage';
+import TripSummaryPage from './pages/TripSummaryPage';
+import UploadPage from './pages/UploadPage';
 
 function App() {
   const router = createBrowserRouter([
@@ -38,9 +38,9 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider theme={theme}>
-        <JourneyProvider>
+        <TripProvider>
           <RouterProvider router={router} />
-        </JourneyProvider>
+        </TripProvider>
       </ThemeProvider>
     </AuthProvider>
   )

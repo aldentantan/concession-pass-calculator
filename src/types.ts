@@ -18,16 +18,35 @@ export interface Trip {
   distance: number;
 }
 
+export interface TripIssue {
+  code: 'BUS_STOP_NOT_FOUND' | 'MRT_STATION_NOT_FOUND';
+  message: string;
+  tripIndex: number;
+  busService?: string;
+  unknownStopName: string;
+}
+
+// Trips grouped by their date
+export interface DayGroup {
+  date: string; // "DD MMM YYYY" format e.g. "01 Oct 2025"
+  day: string;
+  tripIssues: TripIssue[];
+  journeys: Journey[];
+  mrtDistance: number;
+  busDistance: number;
+  totalDistance: number;
+  totalFare: number;
+}
+
 export interface Journey {
-    date: string;
-    day: string;
     startLocation: string;
     endLocation: string;
     trips: Trip[];
     tripIssues: TripIssue[];
     mrtDistance: number;
     busDistance: number;
-    totalDistance: number;
+    fareExcludingBus: number;
+    fareExcludingMrt: number;
     totalFare: number;
 }
 
@@ -54,25 +73,4 @@ export interface Statement {
   statement_month: string;
   statement_year: number;
   created_at: string;
-}
-
-export interface TripIssue {
-  code: 'BUS_STOP_NOT_FOUND' | 'MRT_STATION_NOT_FOUND';
-  message: string;
-  tripIndex: number;
-  busService?: string;
-  unknownStopName: string;
-}
-
-export interface TripWithMetadata {
-  date: string;
-  time: string;
-  mode: 'mrt' | 'bus';
-  busService?: string;
-  startLocation: string;
-  endLocation: string;
-  fare: number;
-  distance: number;
-  statement_id: string;
-  statement_month: string;
 }

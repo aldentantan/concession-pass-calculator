@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { useJourneyContext } from '../contexts/JourneyContext';
+import { useTripContext } from '../contexts/TripContext';
 import { uploadAndProcessPdf } from '../services/pdfUploadService';
 
 export default function UploadPage() {
@@ -14,7 +14,7 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { setJourneys, setFares } = useJourneyContext();
+  const { setDayGroups, setFares } = useTripContext();
   const navigate = useNavigate();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -54,8 +54,8 @@ export default function UploadPage() {
     setLoading(true);
     setError(null);
     try {
-      const { journeys, fares } = await uploadAndProcessPdf(selectedFile);
-      setJourneys(journeys);
+      const { journeys: dayGroups, fares } = await uploadAndProcessPdf(selectedFile);
+      setDayGroups(dayGroups);
       setFares(fares);
       navigate('/trip-summary');
     } catch (err) {

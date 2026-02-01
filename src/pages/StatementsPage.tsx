@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
-import { useJourneyContext } from "../contexts/JourneyContext";
+import { useTripContext } from "../contexts/TripContext";
 import { deleteStatement, fetchStatements, viewStatementTripSummary } from "../services/statementsService";
 import type { Statement } from "../types";
 
@@ -12,7 +12,7 @@ export default function StatementsPage() {
   const [loadingPage, setLoadingPage] = useState<boolean>(true);
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { setJourneys, setFares, setStatements: setContextStatements } = useJourneyContext();
+  const { setDayGroups, setFares, setContextStatements } = useTripContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,8 +26,8 @@ export default function StatementsPage() {
 
   const viewTripSummary = async (statementId: string) => {
     setLoadingStatementId(statementId);
-    const { journeys, fares } = await viewStatementTripSummary(statementId);
-    setJourneys(journeys);
+    const { dayGroups, fares } = await viewStatementTripSummary(statementId);
+    setDayGroups(dayGroups);
     setFares(fares);
     setContextStatements(statements);
     navigate('/trip-summary');

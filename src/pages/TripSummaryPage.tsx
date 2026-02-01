@@ -6,9 +6,9 @@ import { AlertCircle, Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucid
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import { useJourneyContext } from '../contexts/JourneyContext';
+import { useTripContext } from '../contexts/TripContext';
 import { fetchTripsInDateRange } from '../services/statementsService';
-import type { ConcessionPass, TripWithMetadata, DayGroupedTrips } from '../types';
+import type { ConcessionPass } from '../types';
 
 const PASS_OPTIONS: ConcessionPass[] = [
   {
@@ -38,10 +38,9 @@ const PASS_OPTIONS: ConcessionPass[] = [
 ];
 
 export default function TripSummaryPage() {
-  const { journeys } = useJourneyContext();
+  const { dayGroups, setDayGroups } = useTripContext();
   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
-  const [windowTrips, setWindowTrips] = useState<TripWithMetadata[]>([]);
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [concessionFares, setConcessionFares] = useState<{
     totalFareExcludingBus: number;
@@ -51,12 +50,12 @@ export default function TripSummaryPage() {
 
   // Calculate earliest trip date
   const earliestTripDate = useMemo(() => {
-    if (journeys.length === 0) return null;
-    const sortedDates = journeys
+    if (dayGroups.length === 0) return null;
+    const sortedDates = dayGroups
       .map(j => j.date)
       .sort((a, b) => a.localeCompare(b));
     return dayjs(sortedDates[0]);
-  }, [journeys]);
+  }, [dayGroups]);
 
   // Initialize default start date
   useEffect(() => {
@@ -76,11 +75,12 @@ export default function TripSummaryPage() {
         selectedStartDate.format('YYYY-MM-DD'),
         selectedEndDate.format('YYYY-MM-DD')
       );
-      setWindowTrips(response.trips || []);
+      // Backend now returns day groups directly
+      setDayGroups(response.dayGroups || []);
       setConcessionFares(response.concessionFares || { totalFareExcludingBus: 0, totalFareExcludingMrt: 0 });
     } catch (error) {
       console.error('Error fetching window trips:', error);
-      setWindowTrips([]);
+      setDayGroups([]);
     } finally {
       setLoadingTrips(false);
     }
@@ -94,77 +94,19 @@ export default function TripSummaryPage() {
     }
   };
 
-  // Group trips by day
-  const groupedTrips = useMemo(() => {
-    const groups = new Map<string, DayGroupedTrips>();
-
-    windowTrips.forEach(trip => {
-      const dateKey = trip.date;
-      if (!groups.has(dateKey)) {
-        const date = dayjs(dateKey);
-        groups.set(dateKey, {
-          date: dateKey,
-          dayOfWeek: date.format('ddd, DD MMM'),
-          trips: [],
-          totalFare: 0,
-        });
-      }
-
-      const group = groups.get(dateKey)!;
-      group.trips.push(trip);
-      group.totalFare += trip.fare;
-    });
-
-    // Calculate routes for each day
-    groups.forEach((group) => {
-      if (group.trips.length > 0) {
-        // Sort trips by time first
-        group.trips.sort((a, b) => {
-          // Parse time format like "06:33 AM" or "06:10 PM" or "14:30"
-          const parseTime = (timeStr: string) => {
-            const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
-            if (!match) return 0;
-
-            let hours = parseInt(match[1], 10);
-            const minutes = parseInt(match[2], 10);
-            const period = match[3]?.toUpperCase();
-
-            // Convert to 24-hour format if AM/PM is present
-            if (period === 'PM' && hours !== 12) {
-              hours += 12;
-            } else if (period === 'AM' && hours === 12) {
-              hours = 0;
-            }
-
-            return hours * 60 + minutes; // Return total minutes since midnight
-          };
-
-          return parseTime(a.time) - parseTime(b.time);
-        });
-      }
-    });
-
-    return Array.from(groups.values()).sort((a, b) => a.date.localeCompare(b.date));
-  }, [windowTrips]);
-
-  // Calculate window metrics
+  // Calculate window metrics from day groups
   const windowMetrics = useMemo(() => {
-    const paygTotal = windowTrips.reduce((sum, trip) => sum + trip.fare, 0);
-    const busDistance = windowTrips
-      .filter(t => t.mode === 'bus')
-      .reduce((sum, trip) => sum + trip.distance, 0);
-    const mrtDistance = windowTrips
-      .filter(t => t.mode === 'mrt')
-      .reduce((sum, trip) => sum + trip.distance, 0);
+    const paygTotal = dayGroups.reduce((sum, dayGroup) => sum + dayGroup.totalFare, 0);
+    const busDistance = dayGroups.reduce((sum, dayGroup) => sum + dayGroup.busDistance, 0);
+    const mrtDistance = dayGroups.reduce((sum, dayGroup) => sum + dayGroup.mrtDistance, 0);
 
     return {
       paygTotal: Math.round(paygTotal * 100) / 100,
-      tripCount: windowTrips.length,
+      tripCount: dayGroups.length,
       busDistance: Math.round(busDistance * 100) / 100,
       mrtDistance: Math.round(mrtDistance * 100) / 100,
     };
-  }, [windowTrips]);
-
+  }, [dayGroups]);
   // Calculate pass comparison
   const passComparison = useMemo(() => {
     return PASS_OPTIONS.map(pass => {
@@ -264,7 +206,7 @@ export default function TripSummaryPage() {
           <Card className="flex justify-center p-4 mb-6 bg-blue-50 border-blue-200">
             <div className="text-sm">
               <div className="font-semibold text-blue-900">30-day period</div>
-              <div className="text-blue-700">{windowTrips.length} trips found</div>
+              <div className="text-blue-700">{dayGroups.reduce((total, dg) => total + dg.journeys.reduce((jTotal, journey) => jTotal + journey.trips.length, 0), 0)} trips found</div>
             </div>
           </Card>
 
@@ -278,7 +220,7 @@ export default function TripSummaryPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Days Travelled</span>
-                <span className="font-semibold text-slate-900">{groupedTrips.length}</span>
+                <span className="font-semibold text-slate-900">{dayGroups.length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600">Bus Distance Travelled</span>
@@ -369,23 +311,24 @@ export default function TripSummaryPage() {
             <p className="text-slate-600 mb-4">Click any day to view individual journeys</p>
 
             <div className="space-y-3">
-              {groupedTrips.map((day) => {
-                const isExpanded = expandedDays.has(day.date);
+              {dayGroups.map((dayGroup) => {
+                const isExpanded = expandedDays.has(dayGroup.date);
+                const trips = dayGroup.journeys.flatMap(journey => journey.trips);
 
                 return (
-                  <Card key={day.date} className="overflow-hidden border-slate-200">
+                  <Card key={dayGroup.date} className="overflow-hidden border-slate-200">
                     {/* Day Header */}
                     <button
-                      onClick={() => toggleDay(day.date)}
+                      onClick={() => toggleDay(dayGroup.date)}
                       className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
                     >
                       <div className="flex items-center gap-4 flex-1">
                         <Calendar className="w-5 h-5 text-slate-400" />
                         <div className="flex-1">
-                          <div className="font-medium text-slate-900">{day.dayOfWeek}</div>
-                          <div className="text-sm text-slate-600">{day.trips.length} trip{day.trips.length !== 1 ? 's' : ''}</div>
+                          <div className="font-medium text-slate-900">{dayGroup.day}, {dayGroup.date}</div>
+                          <div className="text-sm text-slate-600">{dayGroup.journeys.length} journey{dayGroup.journeys.length !== 1 ? 's' : ''} ◦ {trips.length} trip{trips.length !== 1 ? 's' : ''}</div>
                         </div>
-                        <div className="font-semibold text-slate-900">${day.totalFare.toFixed(2)}</div>
+                        <div className="font-semibold text-slate-900">${dayGroup.totalFare.toFixed(2)}</div>
                       </div>
                       {isExpanded ? (
                         <ChevronUp className="w-5 h-5 text-slate-400" />
@@ -397,7 +340,7 @@ export default function TripSummaryPage() {
                     {/* Expanded Trip Details */}
                     {isExpanded && (
                       <div className="border-t border-slate-200 bg-slate-50">
-                        {day.trips.map((trip, index) => (
+                        {trips.map((trip, index) => (
                           <div
                             key={index}
                             className="p-4 border-b border-slate-200 last:border-b-0 flex items-center gap-4"
@@ -406,7 +349,7 @@ export default function TripSummaryPage() {
                               <div className="text-sm text-slate-600">{trip.time}</div>
                             </div>
                             <div className="flex items-center gap-2 w-26">
-                              {trip.mode === 'bus' ? (
+                              {trip.type === 'bus' ? (
                                 <div className="flex items-center gap-2 px-2 py-1 bg-blue-100 rounded text-sm">
                                   <Bus className="w-4 h-4 text-blue-600" />
                                   <span className="text-blue-900 font-medium">Bus {trip.busService}</span>

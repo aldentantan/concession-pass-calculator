@@ -56,7 +56,7 @@ export async function uploadAndProcessPdf(file: File) {
     });
 
     return {
-      journeys: result.journeys,
+      journeys: result.dayGroups, // Backend returns dayGroups, map to journeys for backward compatibility
       fares: result.fares,
     };
   } catch (error) {

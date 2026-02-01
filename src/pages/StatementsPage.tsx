@@ -1,5 +1,5 @@
 import { Calendar, Eye, FileText, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
@@ -11,7 +11,6 @@ export default function StatementsPage() {
   const [statements, setStatements] = useState<Statement[]>([]);
   const [loadingPage, setLoadingPage] = useState<boolean>(true);
   const [loadingStatementId, setLoadingStatementId] = useState<string>();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { setDayGroups, setFares, setContextStatements } = useTripContext();
   const navigate = useNavigate();
 

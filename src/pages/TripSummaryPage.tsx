@@ -27,13 +27,13 @@ const PASS_OPTIONS: ConcessionPass[] = [
   {
     id: 'undergrad-mrt',
     label: 'Undergrad MRT Pass',
-    monthlyPrice: 55.00,
+    monthlyPrice: 55.50,
     description: 'Unlimited MRT travel',
   },
   {
     id: 'undergrad-hybrid',
     label: 'Undergrad Hybrid Pass',
-    monthlyPrice: 85.00,
+    monthlyPrice: 81.00,
     description: 'Unlimited bus & MRT',
   },
 ];

@@ -1,16 +1,10 @@
-import { IconButton } from '@mui/material';
-import { FileText, Menu, Upload } from 'lucide-react';
+import { FileText, Upload } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Button } from './ui/button';
 
-interface NavigationBarProps {
-  toggleDrawer?: () => void;
-  showDrawer?: boolean;
-}
-
-export function NavigationBar({ toggleDrawer, showDrawer }: NavigationBarProps) {
+export function NavigationBar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { session, signOut } = useAuth();
@@ -31,65 +25,86 @@ export function NavigationBar({ toggleDrawer, showDrawer }: NavigationBarProps) 
 
   return (
     <nav className="w-full border-b border-slate-200 bg-white sticky top-0 z-[1200]">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-3 md:py-4">
-        <div className="flex items-center justify-between">
-          {/* Left: Logo/Title & Navigation */}
-          <div className="flex items-center gap-4 md:gap-8">
-            {/* Mobile Menu Button */}
-            {isMobile && showDrawer && toggleDrawer && (
-              <IconButton
-                onClick={toggleDrawer}
-                size="small"
-                className="md:hidden"
-              >
-                <Menu className="w-5 h-5" />
-              </IconButton>
-            )}
-
-            <h2 className="text-base md:text-lg text-slate-900 font-semibold">
-              Concession Pass Calculator
+      <div className={`max-w-[1600px] mx-auto ${isMobile ? 'px-2 py-2' : 'px-4 md:px-8 py-3 md:py-4'}`}>
+        {isMobile ? (
+          // Mobile layout - centered buttons with title and sign out on sides
+          <div className="flex items-center justify-between gap-1">
+            <h2 className="text-slate-900 font-semibold whitespace-nowrap text-lg">
+              CPC
             </h2>
 
-            {/* Navigation Links - Hidden on mobile */}
-            {!isMobile && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-1 justify-center">
+              <Button
+                variant={currentPage === 'upload' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => navigate('/upload')}
+                className="h-8 w-8 !p-0 min-w-[32px]"
+                style={{ padding: 0, minWidth: '32px', width: '32px', height: '32px' }}
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+
+              <Button
+                variant={currentPage === 'statements' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => navigate('/statements')}
+                className="h-8 w-8 !p-0 min-w-[32px]"
+                style={{ padding: 0, minWidth: '32px', width: '32px', height: '32px' }}
+              >
+                <FileText className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 text-xs"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
+          </div>
+        ) : (
+          // Desktop layout - original structure
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 md:gap-8">
+              <h2 className="text-slate-900 font-semibold whitespace-nowrap text-sm md:text-lg">
+                Concession Pass Calculator
+              </h2>
+
+              <div className="flex items-center gap-1 md:gap-2">
                 <Button
                   variant={currentPage === 'upload' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => navigate('/upload')}
-                  className="gap-2"
+                  className="gap-2 px-3"
                 >
                   <Upload className="w-4 h-4" />
-                  Upload PDF
+                  <span>Upload PDF</span>
                 </Button>
 
                 <Button
                   variant={currentPage === 'statements' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => navigate('/statements')}
-                  className="gap-2"
+                  className="gap-2 px-3"
                 >
                   <FileText className="w-4 h-4" />
-                  My PDFs
+                  <span>My PDFs</span>
                 </Button>
               </div>
-            )}
-          </div>
-
-          {/* Right: User actions - Hidden on mobile */}
-          {!isMobile && (
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-sm"
-                onClick={handleSignOut}
-              >
-                Sign out
-              </Button>
             </div>
-          )}
-        </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-3 text-sm"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </Button>
+          </div>
+        )}
       </div>
     </nav>
   );

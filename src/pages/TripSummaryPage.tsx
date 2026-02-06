@@ -44,6 +44,7 @@ export default function TripSummaryPage() {
   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
   const [loadingTrips, setLoadingTrips] = useState(false);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
   const [concessionFares, setConcessionFares] = useState<{
     totalFareExcludingBus: number;
     totalFareExcludingMrt: number;
@@ -87,6 +88,14 @@ export default function TripSummaryPage() {
       setLoadingTrips(false);
     }
   };
+
+  // Auto-load trips when dates are initialized (only once)
+  useEffect(() => {
+    if (selectedStartDate && selectedEndDate && !loadingTrips && !hasInitiallyLoaded) {
+      loadWindowTrips();
+      setHasInitiallyLoaded(true);
+    }
+  }, [selectedStartDate, selectedEndDate]);
 
   // Handle start date change
   const handleStartDateChange = (newDate: Dayjs | null) => {

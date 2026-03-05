@@ -22,7 +22,7 @@ function App() {
       path: "/",
       element: <AppLayout />,
       children: [
-        { index: true, element: <LoginPage /> },
+        { index: true, element: <UploadPage /> },
         { path: "login", element: <LoginPage /> },
         { path: "signup", element: <SignUpPage /> },
         { path: "signup-success", element: <SignUpSuccessPage /> },

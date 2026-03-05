@@ -2,14 +2,18 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
-import { AlertCircle, Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
+import { Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import NoTripsModal from '../components/NoTripsModal';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
-import type { ConcessionPass } from '../types';
+import type { ConcessionPass, DayGroup } from '../types';
+import { getDayGroups, hasUsedGuestUpload } from '../utils/guestSession';
 
 const PASS_OPTIONS: ConcessionPass[] = [
   {
@@ -39,7 +43,8 @@ const PASS_OPTIONS: ConcessionPass[] = [
 ];
 
 export default function TripSummaryPage() {
-  const { dayGroups, setDayGroups } = useTripContext();
+  const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
@@ -51,14 +56,19 @@ export default function TripSummaryPage() {
   }>({ totalFareExcludingBus: 0, totalFareExcludingMrt: 0 });
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
-  // Calculate earliest trip date
+  const navigate = useNavigate();
+
+  // Calculate earliest trip date.
+  // Guests read from localStorage (full upload) so the default window stays
+  // correct even after loadWindowTrips narrows dayGroups to a filtered subset.
   const earliestTripDate = useMemo(() => {
-    if (dayGroups.length === 0) return null;
-    const sortedDates = dayGroups
+    const source: DayGroup[] = user ? dayGroups : (getDayGroups() as DayGroup[]);
+    if (source.length === 0) return null;
+    const sortedDates = source
       .map(j => j.date)
       .sort((a, b) => a.localeCompare(b));
-    return dayjs(sortedDates[0]);
-  }, [dayGroups]);
+    return dayjs(sortedDates[0], 'DD MMM YYYY');
+  }, [dayGroups, user]);
 
   // Initialize default start date
   useEffect(() => {
@@ -70,17 +80,46 @@ export default function TripSummaryPage() {
 
   // Load window trips
   const loadWindowTrips = async () => {
+    // if (currTripsLoaded) return;
     if (!selectedStartDate || !selectedEndDate) return;
 
     setLoadingTrips(true);
     try {
-      const response = await fetchTripsInDateRange(
-        selectedStartDate.format('YYYY-MM-DD'),
-        selectedEndDate.format('YYYY-MM-DD')
-      );
-      // Backend now returns day groups directly
-      setDayGroups(response.dayGroups || []);
-      setConcessionFares(response.concessionFares || { totalFareExcludingBus: 0, totalFareExcludingMrt: 0 });
+      if (user) {
+        // Authenticated: fetch from backend (DB-persisted data)
+        const response = await fetchTripsInDateRange(
+          selectedStartDate.format('YYYY-MM-DD'),
+          selectedEndDate.format('YYYY-MM-DD')
+        );
+        const dayGroupsResult = response.dayGroups || [];
+        const concessionFaresResult = response.concessionFares || { totalFareExcludingBus: 0, totalFareExcludingMrt: 0 };
+        const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}`;
+        setDayGroups(dayGroupsResult);
+        setConcessionFares(concessionFaresResult);
+        setLastFetchedKey(fetchKey);
+        setCachedConcessionFares(concessionFaresResult);
+        setCurrTripsLoaded(true);
+      } else {
+        // Guest: filter localStorage day groups client-side
+        const start = selectedStartDate.format('YYYY-MM-DD');
+        const end = selectedEndDate.format('YYYY-MM-DD');
+        const allDayGroups = getDayGroups() as DayGroup[];
+        const filtered = allDayGroups.filter((dg) => {
+          const date = dayjs(dg.date, 'DD MMM YYYY').format('YYYY-MM-DD');
+          return date >= start && date <= end;
+        });
+        setDayGroups(filtered);
+        const totalFareExcludingBus = filtered.reduce(
+          (sum, dg) => sum + dg.journeys.reduce((jSum, j) => jSum + j.fareExcludingBus, 0), 0
+        );
+        const totalFareExcludingMrt = filtered.reduce(
+          (sum, dg) => sum + dg.journeys.reduce((jSum, j) => jSum + j.fareExcludingMrt, 0), 0
+        );
+        setConcessionFares({
+          totalFareExcludingBus: Math.round(totalFareExcludingBus * 100) / 100,
+          totalFareExcludingMrt: Math.round(totalFareExcludingMrt * 100) / 100,
+        });
+      }
     } catch (error) {
       console.error('Error fetching window trips:', error);
       setDayGroups([]);
@@ -89,12 +128,23 @@ export default function TripSummaryPage() {
     }
   };
 
-  // Auto-load trips when dates are initialized (only once)
+  // Auto-load trips when dates are initialized (only once per mount).
+  // For auth users returning from another route, restore from sessionStorage
+  // cache to avoid a redundant DB call.
   useEffect(() => {
-    if (selectedStartDate && selectedEndDate && !loadingTrips && !hasInitiallyLoaded) {
-      loadWindowTrips();
-      setHasInitiallyLoaded(true);
+    if (!selectedStartDate || !selectedEndDate || loadingTrips || hasInitiallyLoaded) return;
+
+    if (user && currTripsLoaded) {
+      const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}`;
+      if (lastFetchedKey === fetchKey && dayGroups.length > 0 && cachedConcessionFares) {
+        setConcessionFares(cachedConcessionFares);
+        setHasInitiallyLoaded(true);
+        return;
+      }
     }
+
+    loadWindowTrips();
+    setHasInitiallyLoaded(true);
   }, [selectedStartDate, selectedEndDate]);
 
   // Handle start date change
@@ -166,6 +216,7 @@ export default function TripSummaryPage() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className={`min-h-screen bg-gray-50 ${isMobile ? '' : 'flex'}`}>
+        <NoTripsModal isOpen={!loadingTrips && dayGroups.length === 0} />
         {/* Left Sidebar / Top Controls on Mobile */}
         <div className={`bg-white border-slate-200 ${isMobile ? 'border-b p-4' : 'w-80 border-r p-6 flex-shrink-0'}`}>
           <div className={isMobile ? 'mb-4' : 'mb-8'}>
@@ -279,7 +330,7 @@ export default function TripSummaryPage() {
           )}
 
           {/* Recommendation Card */}
-          <Card className={`${isMobile ? 'p-4 mb-4' : 'p-8 mb-8'} bg-gradient-to-br from-blue-50 to-slate-50 border-slate-200`}>
+          {/* <Card className={`${isMobile ? 'p-4 mb-4' : 'p-8 mb-8'} bg-gradient-to-br from-blue-50 to-slate-50 border-slate-200`}>
             <div className={`flex items-start gap-3 ${isMobile ? 'mb-4' : 'gap-4 mb-6'}`}>
               <div className={`${isMobile ? 'p-2' : 'p-3'} bg-white rounded-full`}>
                 <AlertCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-slate-700`} />
@@ -310,7 +361,7 @@ export default function TripSummaryPage() {
                 </p>
               </div>
             </div>
-          </Card>
+          </Card> */}
 
           {/* Pass Options Breakdown */}
           <div className={isMobile ? 'mb-4' : 'mb-8'}>
@@ -444,6 +495,23 @@ export default function TripSummaryPage() {
               })}
             </div>
           </div>
+
+          {/* Guest Nudge Card */}
+          {!user && hasUsedGuestUpload() && dayGroups.length > 0 && (
+            <Card className={`flex-col ${isMobile ? 'mt-4 p-4' : 'mt-8 p-6'} bg-slate-50 border-slate-200 text-center`}>
+              <p className={`text-slate-900 font-medium ${isMobile ? 'text-sm mb-3' : 'mb-4'}`}>
+                Save these results and compare month-over-month. Sign up in 30 seconds.
+              </p>
+              <div className={`flex justify-center ${isMobile ? 'flex-col gap-2 items-center' : 'gap-4'}`}>
+                <Button variant="default" size="sm" className="px-3 text-sm" onClick={() => navigate('/signup')}>
+                  Sign Up
+                </Button>
+                <Button variant="ghost" size="sm" className="px-3 text-sm w-50" onClick={() => navigate('/login')}>
+                  Log In
+                </Button>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
     </LocalizationProvider>

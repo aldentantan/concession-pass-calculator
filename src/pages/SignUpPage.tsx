@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabase';
+import { clearGuestSession } from '../utils/guestSession';
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -30,6 +31,7 @@ export default function SignUpPage() {
     if (error) {
       alert(error.message);
     } else {
+      clearGuestSession();
       navigate('/signup-success');
     }
     setSignupLoading(false);
@@ -52,12 +54,12 @@ export default function SignUpPage() {
 
   // If user is logged in, return to log in page
   if (session) {
-    navigate('/');
+    navigate('/upload');
   }
 
   return (
     <div className="w-full">
-      <div className="max-w-lg mx-auto px-8 py-16">
+      <div className="max-w-lg mx-auto px-8 py-2">
         {/* Header Section */}
         <div className="text-center mb-8">
           <h2 className="text-3xl text-slate-900 font-semibold mb-3">Concession Pass Calculator</h2>
@@ -189,7 +191,7 @@ export default function SignUpPage() {
         {/* Sign In Link */}
         <p className="text-center mt-6 text-slate-600">
           Already have an account?{' '}
-          <Link to="/" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium">
             Sign In
           </Link>
         </p>

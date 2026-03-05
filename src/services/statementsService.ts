@@ -37,15 +37,11 @@ export async function fetchTripsInDateRange(startDate: string, endDate: string) 
   } = await supabase.auth.getSession();
   const userId = session?.user?.id;
 
-  console.log('📡 Calling API with:', { userId, startDate, endDate });
-
   const response = await apiClient.get("/statements/trips/range", {
     userId,
     startDate,
     endDate,
   });
-
-  console.log('📦 Raw API response:', response);
 
   return response;
 }

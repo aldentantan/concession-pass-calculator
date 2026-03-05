@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../supabase';
+import { clearGuestSession } from '../utils/guestSession';
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,6 +19,7 @@ export default function LoginPage() {
   const handleSignIn = async (): Promise<void> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) alert(error.message);
+    else clearGuestSession();
   };
 
   const handleGoogleSignIn = async (): Promise<void> => {
@@ -64,7 +66,7 @@ export default function LoginPage() {
   // Show login form
   return (
     <div className="w-full">
-      <div className="max-w-lg mx-auto px-8 py-16">
+      <div className="max-w-lg mx-auto px-8 py-2">
         {/* Header Section */}
         <div className="text-center mb-8">
           <h2 className="text-3xl text-slate-900 font-semibold mb-3">Concession Pass Calculator</h2>

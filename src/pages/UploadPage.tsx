@@ -5,19 +5,24 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import UploadGateModal from '../components/UploadGateModal';
+import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { uploadAndProcessPdf } from '../services/pdfUploadService';
+import { uploadAndProcessPdf, uploadAndProcessPdfAsGuest } from '../services/pdfUploadService';
+import { hasUsedGuestUpload, markGuestUploadUsed, storeDayGroups } from '../utils/guestSession';
 
 export default function UploadPage() {
+  const { user } = useAuth();
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showUploadGateModal, setShowUploadGateModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
-  const { setDayGroups, setFares } = useTripContext();
+  const { setDayGroups, setFares, setCurrTripsLoaded } = useTripContext();
   const navigate = useNavigate();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -54,12 +59,24 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
+    if (!user && hasUsedGuestUpload()) {
+      setShowUploadGateModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const { journeys: dayGroups, fares } = await uploadAndProcessPdf(selectedFile);
+      const { journeys: dayGroups, fares } = user
+        ? await uploadAndProcessPdf(selectedFile)
+        : await uploadAndProcessPdfAsGuest(selectedFile);
       setDayGroups(dayGroups);
       setFares(fares);
+      setCurrTripsLoaded(false);
+      if (!user) {
+        storeDayGroups(dayGroups);
+        markGuestUploadUsed();
+      }
       navigate('/trip-summary');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse PDF');
@@ -70,6 +87,7 @@ export default function UploadPage() {
 
   return (
     <div className="w-full">
+      <UploadGateModal isOpen={showUploadGateModal} />
       <div className={`max-w-4xl mx-auto ${isMobile ? 'px-4 py-6' : 'px-8 py-8'}`}>
         {/* Hero Section */}
         <div className={`text-center ${isMobile ? 'mb-6' : 'mb-8'}`}>

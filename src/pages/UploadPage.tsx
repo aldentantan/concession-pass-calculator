@@ -1,16 +1,16 @@
 
 import { CircularProgress } from '@mui/material';
-import { AlertCircle, Calculator, FileText, Shield, TrendingUp, Upload } from 'lucide-react';
+import { AlertCircle, Calculator, FileText, HelpCircle, Shield, TrendingUp, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SimplyGoTutorialModal from '../components/SimplyGoTutorialModal';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
-import UploadGateModal from '../components/UploadGateModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { uploadAndProcessPdf, uploadAndProcessPdfAsGuest } from '../services/pdfUploadService';
-import { hasUsedGuestUpload, markGuestUploadUsed, storeDayGroups } from '../utils/guestSession';
+import { storeDayGroups } from '../utils/guestSession';
 
 export default function UploadPage() {
   const { user } = useAuth();
@@ -18,7 +18,7 @@ export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showUploadGateModal, setShowUploadGateModal] = useState(false);
+  const [showTutorialModal, setShowTutorialModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
@@ -59,11 +59,6 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (!selectedFile) return;
 
-    if (!user && hasUsedGuestUpload()) {
-      setShowUploadGateModal(true);
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
@@ -75,7 +70,6 @@ export default function UploadPage() {
       setCurrTripsLoaded(false);
       if (!user) {
         storeDayGroups(dayGroups);
-        markGuestUploadUsed();
       }
       navigate('/trip-summary');
     } catch (err) {
@@ -87,7 +81,7 @@ export default function UploadPage() {
 
   return (
     <div className="w-full">
-      <UploadGateModal isOpen={showUploadGateModal} />
+      <SimplyGoTutorialModal isOpen={showTutorialModal} onClose={() => setShowTutorialModal(false)} />
       <div className={`max-w-4xl mx-auto ${isMobile ? 'px-4 py-6' : 'px-8 py-8'}`}>
         {/* Hero Section */}
         <div className={`text-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
@@ -97,6 +91,16 @@ export default function UploadPage() {
           <p className={`text-slate-600 ${isMobile ? 'text-sm' : 'text-lg'}`}>
             Get personalized pass recommendations based on your actual travel patterns
           </p>
+
+          <div className={`flex justify-center`}>
+            <button
+              onClick={() => setShowTutorialModal(true)}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 hover:text-slate-700 transition-colors underline underline-offset-2"
+            >
+              <HelpCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              How do I get my SimplyGo statement PDF?
+            </button>
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -175,7 +179,7 @@ export default function UploadPage() {
             </div>
           </div>
 
-          <div className={`${isMobile ? 'mt-6' : 'mt-8'} flex justify-center`}>
+          <div className={`${isMobile ? 'mt-4' : 'mt-6'} flex justify-center`}>
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || loading}

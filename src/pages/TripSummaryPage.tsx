@@ -4,7 +4,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import { Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import NoTripsModal from '../components/NoTripsModal';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -13,7 +12,7 @@ import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
 import type { ConcessionPass, DayGroup } from '../types';
-import { getDayGroups, hasUsedGuestUpload } from '../utils/guestSession';
+import { getDayGroups } from '../utils/guestSession';
 
 const PASS_OPTIONS: ConcessionPass[] = [
   {
@@ -55,8 +54,6 @@ export default function TripSummaryPage() {
     totalFareExcludingMrt: number;
   }>({ totalFareExcludingBus: 0, totalFareExcludingMrt: 0 });
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
-
-  const navigate = useNavigate();
 
   // Calculate earliest trip date.
   // Guests read from localStorage (full upload) so the default window stays
@@ -329,40 +326,6 @@ export default function TripSummaryPage() {
             </Card>
           )}
 
-          {/* Recommendation Card */}
-          {/* <Card className={`${isMobile ? 'p-4 mb-4' : 'p-8 mb-8'} bg-gradient-to-br from-blue-50 to-slate-50 border-slate-200`}>
-            <div className={`flex items-start gap-3 ${isMobile ? 'mb-4' : 'gap-4 mb-6'}`}>
-              <div className={`${isMobile ? 'p-2' : 'p-3'} bg-white rounded-full`}>
-                <AlertCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-slate-700`} />
-              </div>
-              <div className="flex-1">
-                <h2 className={`font-semibold text-slate-900 ${isMobile ? 'text-lg mb-1' : 'text-2xl mb-2'}`}>
-                  Stick to {bestPass.pass.label}
-                </h2>
-                <p className={`text-slate-700 ${isMobile ? 'text-sm' : ''}`}>
-                  Based on your travel patterns, paying{' '}
-                  <span className="font-semibold">${bestPass.cost.toFixed(2)}/month</span>{' '}
-                  is your most economical option.
-                </p>
-              </div>
-            </div>
-
-            <div className={`grid grid-cols-2 gap-3 sm:gap-4 ${isMobile ? 'pt-4' : 'pt-6'} border-t border-slate-200`}>
-              <div>
-                <p className="text-xs sm:text-sm text-slate-600 mb-1">Best Option</p>
-                <p className={`font-semibold text-slate-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                  {bestPass.pass.label}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-slate-600 mb-1">Monthly Cost</p>
-                <p className={`font-semibold text-slate-900 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                  ${bestPass.cost.toFixed(2)}
-                </p>
-              </div>
-            </div>
-          </Card> */}
-
           {/* Pass Options Breakdown */}
           <div className={isMobile ? 'mb-4' : 'mb-8'}>
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-3' : 'text-xl mb-4'}`}>
@@ -495,23 +458,6 @@ export default function TripSummaryPage() {
               })}
             </div>
           </div>
-
-          {/* Guest Nudge Card */}
-          {!user && hasUsedGuestUpload() && dayGroups.length > 0 && (
-            <Card className={`flex-col ${isMobile ? 'mt-4 p-4' : 'mt-8 p-6'} bg-slate-50 border-slate-200 text-center`}>
-              <p className={`text-slate-900 font-medium ${isMobile ? 'text-sm mb-3' : 'mb-4'}`}>
-                Save these results and compare month-over-month. Sign up in 30 seconds.
-              </p>
-              <div className={`flex justify-center ${isMobile ? 'flex-col gap-2 items-center' : 'gap-4'}`}>
-                <Button variant="default" size="sm" className="px-3 text-sm" onClick={() => navigate('/signup')}>
-                  Sign Up
-                </Button>
-                <Button variant="ghost" size="sm" className="px-3 text-sm w-50" onClick={() => navigate('/login')}>
-                  Log In
-                </Button>
-              </div>
-            </Card>
-          )}
         </div>
       </div>
     </LocalizationProvider>

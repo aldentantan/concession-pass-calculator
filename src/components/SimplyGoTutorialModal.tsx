@@ -30,7 +30,7 @@ const STEPS: TutorialStep[] = [
   },
   {
     title: 'Step 4 — Download the SimplyGo PDF',
-    description: 'Click on the xx 2026 Transit Statement and download the PDF of the month you wish to analyse. Upload this PDF onto this website.',
+    description: 'Download the Transit Statement of the month to be analysed. Upload this PDF on this page.',
     imageSrc: tutStep4,
   }
 ];

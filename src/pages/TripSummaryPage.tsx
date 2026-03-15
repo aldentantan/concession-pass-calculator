@@ -24,7 +24,7 @@ const PASS_OPTIONS: ConcessionPass[] = [
   {
     id: 'undergrad-bus',
     label: 'Undergrad Bus Pass',
-    monthlyPrice: 45.00,
+    monthlyPrice: 48.00,
     description: 'Unlimited bus travel',
   },
   {

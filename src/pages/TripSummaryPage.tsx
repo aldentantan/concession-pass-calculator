@@ -2,7 +2,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
-import { Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
+import { AlertTriangle, Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import NoTripsModal from '../components/NoTripsModal';
 import { Button } from '../components/ui/button';
@@ -13,6 +13,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
 import type { ConcessionPass, DayGroup } from '../types';
 import { getDayGroups } from '../utils/guestSession';
+import { Tooltip } from '@mui/material';
 
 const PASS_OPTIONS: ConcessionPass[] = [
   {
@@ -40,6 +41,8 @@ const PASS_OPTIONS: ConcessionPass[] = [
     description: 'Unlimited bus & MRT',
   },
 ];
+
+const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
 
 export default function TripSummaryPage() {
   const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
@@ -381,7 +384,15 @@ export default function TripSummaryPage() {
             <div className="space-y-3">
               {dayGroups.map((dayGroup) => {
                 const isExpanded = expandedDays.has(dayGroup.date);
-                const trips = dayGroup.journeys.flatMap(journey => journey.trips);
+                const tripsWithIssueState = dayGroup.journeys.flatMap((journey) =>
+                  journey.trips.map((trip, tripIndex) => ({
+                    trip,
+                    hasBusStopIssue: journey.tripIssues.some(
+                      (issue) => issue.code === 'BUS_STOP_NOT_FOUND' && issue.tripIndex === tripIndex
+                    ),
+                  }))
+                );
+                const hasDayBusStopIssue = dayGroup.tripIssues.some((issue) => issue.code === 'BUS_STOP_NOT_FOUND');
 
                 return (
                   <Card key={dayGroup.date} className="overflow-hidden border-slate-200">
@@ -398,9 +409,16 @@ export default function TripSummaryPage() {
                           </div>
                           <div className={`text-slate-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                             {dayGroup.journeys.length} journey{dayGroup.journeys.length !== 1 ? 's' : ''} ◦{' '}
-                            {trips.length} trip{trips.length !== 1 ? 's' : ''}
+                            {tripsWithIssueState.length} trip{tripsWithIssueState.length !== 1 ? 's' : ''}
                           </div>
                         </div>
+                        {hasDayBusStopIssue && (
+                          <Tooltip title={BUS_STOP_ISSUE_TOOLTIP} placement="top" slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 270 }}}}>
+                            <div className="text-amber-600">
+                              <AlertTriangle className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
+                            </div>
+                          </Tooltip>
+                        )}
                         <div className={`font-semibold text-slate-900 ${isMobile ? 'text-sm' : ''} flex-shrink-0`}>
                           ${dayGroup.totalFare.toFixed(2)}
                         </div>
@@ -415,7 +433,7 @@ export default function TripSummaryPage() {
                     {/* Expanded Trip Details */}
                     {isExpanded && (
                       <div className="border-t border-slate-200 bg-slate-50">
-                        {trips.map((trip, index) => (
+                        {tripsWithIssueState.map(({ trip, hasBusStopIssue }, index) => (
                           <div
                             key={index}
                             className={`${isMobile ? 'p-3' : 'p-4'} border-b border-slate-200 last:border-b-0 ${isMobile ? 'space-y-2' : 'flex items-center gap-4'}`}
@@ -430,7 +448,7 @@ export default function TripSummaryPage() {
                                 </div>
                               )}
                             </div>
-                            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 w-26'}`}>
+                            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 w-28'}`}>
                               {trip.type === 'bus' ? (
                                 <div className={`flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded ${isMobile ? 'text-xs' : 'text-sm'}`}>
                                   <Bus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
@@ -441,6 +459,13 @@ export default function TripSummaryPage() {
                                   <Train className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
                                   <span className="text-green-900 font-medium">MRT</span>
                                 </div>
+                              )}
+                              {hasBusStopIssue && (
+                                <Tooltip title={BUS_STOP_ISSUE_TOOLTIP} placement="top" slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 270 }}}}>
+                                  <div className="text-amber-600">
+                                    <AlertTriangle className="w-4 h-4" />
+                                  </div>
+                                </Tooltip>
                               )}
                             </div>
                             <div className={`flex-1 ${isMobile ? 'text-xs' : 'text-sm'} text-slate-700`}>

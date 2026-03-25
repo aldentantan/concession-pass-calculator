@@ -1,8 +1,9 @@
+import { Tooltip } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
-import { AlertTriangle, Bus, Calendar, ChevronDown, ChevronUp, Train } from 'lucide-react';
+import { AlertTriangle, Bus, Calendar, ChevronDown, ChevronUp, Info, Train } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import NoTripsModal from '../components/NoTripsModal';
 import { Button } from '../components/ui/button';
@@ -11,9 +12,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
-import type { ConcessionPass, DayGroup } from '../types';
-import { getDayGroups } from '../utils/guestSession';
-import { Tooltip } from '@mui/material';
+import type { ConcessionFareResponse, ConcessionPass, DayGroup } from '../types';
+import { getGuestTripSummary } from '../utils/guestSession';
 
 const PASS_OPTIONS: ConcessionPass[] = [
   {
@@ -43,38 +43,41 @@ const PASS_OPTIONS: ConcessionPass[] = [
 ];
 
 const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
+const SAVINGS_BASELINE_TOOLTIP = 'Comparison baseline: Total cost of "No Pass", which estimates how much you would have spent this month without any concession pass.';
 
 export default function TripSummaryPage() {
   const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
   const { user } = useAuth();
+  const guestTripSummary = user ? null : getGuestTripSummary();
   const isMobile = useIsMobile();
   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
-  const [concessionFares, setConcessionFares] = useState<{
-    totalFareExcludingBus: number;
-    totalFareExcludingMrt: number;
-  }>({ totalFareExcludingBus: 0, totalFareExcludingMrt: 0 });
+  const [concessionFares, setConcessionFares] = useState<ConcessionFareResponse>({
+    totalFareWithNewPrices: 0,
+    totalFareExcludingBus: 0,
+    totalFareExcludingMrt: 0,
+  });
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   // Calculate earliest trip date.
-  // Guests read from localStorage (full upload) so the default window stays
+  // Guests read from sessionStorage (full upload) so the default window stays
   // correct even after loadWindowTrips narrows dayGroups to a filtered subset.
   const earliestTripDate = useMemo(() => {
-    const source: DayGroup[] = user ? dayGroups : (getDayGroups() as DayGroup[]);
+    const source: DayGroup[] = user ? dayGroups : (guestTripSummary?.dayGroups ?? []);
     if (source.length === 0) return null;
     const sortedDates = source
       .map(j => j.date)
       .sort((a, b) => a.localeCompare(b));
     return dayjs(sortedDates[0], 'DD MMM YYYY');
-  }, [dayGroups, user]);
+  }, [dayGroups, guestTripSummary?.dayGroups, user]);
 
   // Initialize default start date
   useEffect(() => {
     if (earliestTripDate && !selectedStartDate) {
       setSelectedStartDate(earliestTripDate);
-      setSelectedEndDate(earliestTripDate.add(29, 'day'));
+      setSelectedEndDate(earliestTripDate.add(1, 'month').subtract(1, 'day'));
     }
   }, [earliestTripDate, selectedStartDate, selectedEndDate]);
 
@@ -92,7 +95,11 @@ export default function TripSummaryPage() {
           selectedEndDate.format('YYYY-MM-DD')
         );
         const dayGroupsResult = response.dayGroups || [];
-        const concessionFaresResult = response.concessionFares || { totalFareExcludingBus: 0, totalFareExcludingMrt: 0 };
+        const concessionFaresResult = response.concessionFares || {
+          totalFareWithNewPrices: 0,
+          totalFareExcludingBus: 0,
+          totalFareExcludingMrt: 0,
+        };
         const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}`;
         setDayGroups(dayGroupsResult);
         setConcessionFares(concessionFaresResult);
@@ -100,24 +107,37 @@ export default function TripSummaryPage() {
         setCachedConcessionFares(concessionFaresResult);
         setCurrTripsLoaded(true);
       } else {
-        // Guest: filter localStorage day groups client-side
+        // Guest: filter sessionStorage day groups client-side
         const start = selectedStartDate.format('YYYY-MM-DD');
         const end = selectedEndDate.format('YYYY-MM-DD');
-        const allDayGroups = getDayGroups() as DayGroup[];
+        const allDayGroups = guestTripSummary?.dayGroups ?? [];
         const filtered = allDayGroups.filter((dg) => {
           const date = dayjs(dg.date, 'DD MMM YYYY').format('YYYY-MM-DD');
           return date >= start && date <= end;
         });
+
+        const selectedDates = new Set(filtered.map((dayGroup) => dayGroup.date));
+        const concessionFaresByDate = guestTripSummary?.concessionFaresByDate ?? {};
+        const filteredFares = Object.entries(concessionFaresByDate).reduce((accumulator, [date, fares]) => {
+          if (!selectedDates.has(date)) {
+            return accumulator;
+          }
+
+          accumulator.totalFareWithNewPrices += fares.totalFareWithNewPrices;
+          accumulator.totalFareExcludingBus += fares.totalFareExcludingBus;
+          accumulator.totalFareExcludingMrt += fares.totalFareExcludingMrt;
+          return accumulator;
+        }, {
+          totalFareWithNewPrices: 0,
+          totalFareExcludingBus: 0,
+          totalFareExcludingMrt: 0,
+        });
+
         setDayGroups(filtered);
-        const totalFareExcludingBus = filtered.reduce(
-          (sum, dg) => sum + dg.journeys.reduce((jSum, j) => jSum + j.fareExcludingBus, 0), 0
-        );
-        const totalFareExcludingMrt = filtered.reduce(
-          (sum, dg) => sum + dg.journeys.reduce((jSum, j) => jSum + j.fareExcludingMrt, 0), 0
-        );
         setConcessionFares({
-          totalFareExcludingBus: Math.round(totalFareExcludingBus * 100) / 100,
-          totalFareExcludingMrt: Math.round(totalFareExcludingMrt * 100) / 100,
+          totalFareWithNewPrices: Math.round(filteredFares.totalFareWithNewPrices * 100) / 100,
+          totalFareExcludingBus: Math.round(filteredFares.totalFareExcludingBus * 100) / 100,
+          totalFareExcludingMrt: Math.round(filteredFares.totalFareExcludingMrt * 100) / 100,
         });
       }
     } catch (error) {
@@ -151,7 +171,7 @@ export default function TripSummaryPage() {
   const handleStartDateChange = (newDate: Dayjs | null) => {
     if (newDate) {
       setSelectedStartDate(newDate);
-      setSelectedEndDate(newDate.add(29, 'day'));
+      setSelectedEndDate(newDate.add(1, 'month').subtract(1, 'day'));
     }
   };
 
@@ -175,7 +195,7 @@ export default function TripSummaryPage() {
       const paygTotal = windowMetrics.paygTotal;
 
       if (pass.id === 'no-pass') {
-        totalCost = paygTotal;
+        totalCost = concessionFares.totalFareWithNewPrices;
       } else if (pass.id === 'undergrad-mrt') {
         totalCost = pass.monthlyPrice + concessionFares.totalFareExcludingMrt;
       } else if (pass.id === 'undergrad-bus') {
@@ -200,6 +220,7 @@ export default function TripSummaryPage() {
       current.savings > best.savings ? current : best
     );
   }, [passComparison]);
+  const optimalPassDifference = windowMetrics.paygTotal - bestPass.cost;
 
   const toggleDay = (date: string) => {
     setExpandedDays(prev => {
@@ -247,7 +268,6 @@ export default function TripSummaryPage() {
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">End Date (Auto)</label>
               <DatePicker
                 value={selectedEndDate}
-                disabled
                 format="DD/MM/YYYY"
                 slotProps={{
                   textField: {
@@ -282,11 +302,11 @@ export default function TripSummaryPage() {
               <h4 className="text-sm font-semibold text-slate-900 mb-4">Quick 30-Day Summary</h4>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Total Amount Spent</span>
+                  <span className="text-slate-600">Your Actual Spendings This Month </span>
                   <span className="font-semibold text-slate-900">${windowMetrics.paygTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Days Travelled</span>
+                  <span className="text-slate-600">No. of Days Travelled</span>
                   <span className="font-semibold text-slate-900">{dayGroups.length}</span>
                 </div>
                 <div className="flex justify-between">
@@ -334,14 +354,17 @@ export default function TripSummaryPage() {
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-3' : 'text-xl mb-4'}`}>
               Pass Options Breakdown {!isMobile && '(Based on your Travel History)'}
             </h3>
+            <h2 className="mb-4">This is how much you would have spent in total if you were to purchase each pass with your current travel patterns:</h2>
             <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-4 gap-6'}`}>
               {passComparison.map((option) => {
                 const isBest = option.pass.id === bestPass.pass.id;
+                // const savings = windowMetrics.paygTotal - option.cost;
+                const savings = concessionFares.totalFareWithNewPrices - option.cost;
 
                 return (
                   <Card
                     key={option.pass.id}
-                    className={`${isMobile ? 'p-4' : 'p-6'} ${isBest ? 'bg-green-50 border-green-300' : 'bg-white border-slate-200'}`}
+                    className={`${isMobile ? 'p-4' : 'p-6'} flex flex-col h-full ${isBest ? 'bg-green-50 border-green-300' : 'bg-white border-slate-200'}`}
                   >
                     <div className="flex justify-between items-start mb-3 sm:mb-4">
                       <div>
@@ -356,7 +379,7 @@ export default function TripSummaryPage() {
                         </span>
                       )}
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 mt-auto">
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-slate-600">Pass Price</span>
                         <span className="font-semibold text-slate-900">${option.pass.monthlyPrice.toFixed(2)}</span>
@@ -365,12 +388,70 @@ export default function TripSummaryPage() {
                         <span className="text-slate-600">Total Cost</span>
                         <span className="font-semibold text-slate-900">${option.cost.toFixed(2)}</span>
                       </div>
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-slate-600 inline-flex items-center gap-2">
+                          You would save
+                          <Tooltip
+                            title={SAVINGS_BASELINE_TOOLTIP}
+                            placement="top"
+                            slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
+                          >
+                            <Info className="w-3.5 h-3.5 text-slate-400" />
+                          </Tooltip>
+                        </span>
+                        <span
+                          className={`font-semibold ${
+                            savings > 0 ? 'text-green-600' : savings < 0 ? 'text-red-600' : 'text-slate-900'
+                          }`}
+                        >
+                          ${savings.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </Card>
                 );
               })}
             </div>
           </div>
+
+          <Card className={`${isMobile ? 'p-4 mb-4' : 'p-6 mb-8'} bg-white border-slate-200`}>
+            <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-3' : 'text-lg mb-4'}`}>
+              Optimal Pass Summary
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between items-center gap-4">
+                <span className="text-slate-600">Actual amount paid</span>
+                <span className="font-semibold text-slate-900">${windowMetrics.paygTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center gap-4">
+                <span className="text-slate-600">Optimal pass to buy</span>
+                <span className="font-semibold text-slate-900 text-right">{bestPass.pass.label}</span>
+              </div>
+              <div className="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
+                <span className="text-slate-600 inline-flex items-end gap-2">
+                  Difference vs optimal pass
+                  <Tooltip
+                            title='Might be inaccurate if you bought a concession pass already'
+                            placement="top"
+                            slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
+                          >
+                            <Info className="w-3.5 h-3.5 text-slate-400" />
+                          </Tooltip>
+                </span>
+                <span
+                  className={`font-semibold ${
+                    optimalPassDifference > 0
+                      ? 'text-green-600'
+                      : optimalPassDifference < 0
+                        ? 'text-red-600'
+                        : 'text-slate-900'
+                  }`}
+                >
+                  ${optimalPassDifference.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          </Card>
 
           {/* Trip Details */}
           <div>

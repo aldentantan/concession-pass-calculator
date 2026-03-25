@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { uploadAndProcessPdf, uploadAndProcessPdfAsGuest } from '../services/pdfUploadService';
-import { storeDayGroups } from '../utils/guestSession';
+import { storeGuestTripSummary } from '../utils/guestSession';
 
 export default function UploadPage() {
   const { user } = useAuth();
@@ -69,7 +69,7 @@ export default function UploadPage() {
       setFares(fares);
       setCurrTripsLoaded(false);
       if (!user) {
-        storeDayGroups(dayGroups);
+        storeGuestTripSummary({ dayGroups, fares });
       }
       navigate('/trip-summary');
     } catch (err) {

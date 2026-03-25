@@ -8,13 +8,13 @@ interface TripContextType {
   contextStatements: Statement[];
   currTripsLoaded: Boolean;
   lastFetchedKey: string | null;
-  cachedConcessionFares: { totalFareExcludingBus: number; totalFareExcludingMrt: number } | null;
+  cachedConcessionFares: ConcessionFareResponse | null;
   setDayGroups: (dayGroups: DayGroup[]) => void;
   setFares: (fares: ConcessionFareResponse) => void;
   setContextStatements: (statements: Statement[]) => void;
   setCurrTripsLoaded: (loaded: Boolean) => void;
   setLastFetchedKey: (key: string | null) => void;
-  setCachedConcessionFares: (fares: { totalFareExcludingBus: number; totalFareExcludingMrt: number } | null) => void;
+  setCachedConcessionFares: (fares: ConcessionFareResponse | null) => void;
   clearData: () => void;
 }
 
@@ -32,7 +32,7 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const [contextStatements, setContextStatements] = useState<Statement[]>([]);
   const [currTripsLoaded, setCurrTripsLoaded] = useState<Boolean>(false);
   const [lastFetchedKey, setLastFetchedKey] = useState<string | null>(null);
-  const [cachedConcessionFares, setCachedConcessionFares] = useState<{ totalFareExcludingBus: number; totalFareExcludingMrt: number } | null>(null);
+  const [cachedConcessionFares, setCachedConcessionFares] = useState<ConcessionFareResponse | null>(null);
 
   const clearData = () => {
     setDayGroups([]);

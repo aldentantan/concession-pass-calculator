@@ -1,18 +1,84 @@
+import type { ConcessionFareResponse, DayGroup } from '../types';
+
+const GUEST_TRIP_SUMMARY_KEY = 'guest_trip_summary';
+
+const defaultFares: ConcessionFareResponse = {
+  totalFareWithNewPrices: 0,
+  totalFareExcludingBus: 0,
+  totalFareExcludingMrt: 0,
+};
+
+export interface GuestTripSummary {
+  dayGroups: DayGroup[];
+  fares: ConcessionFareResponse;
+  concessionFaresByDate: Record<string, ConcessionFareResponse>;
+}
+
 export function clearGuestSession(): void {
   localStorage.removeItem('guest_upload_used');
-  sessionStorage.removeItem('day_groups');
+  sessionStorage.removeItem(GUEST_TRIP_SUMMARY_KEY);
 }
 
-export function storeDayGroups(dayGroups: object[]): void {
-  sessionStorage.setItem('day_groups', JSON.stringify(dayGroups));
+function roundCurrency(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
-export function getDayGroups(): object[] {
-  const raw = sessionStorage.getItem('day_groups');
-  if (!raw) return [];
+function buildConcessionFaresByDate(dayGroups: DayGroup[]): Record<string, ConcessionFareResponse> {
+  return dayGroups.reduce<Record<string, ConcessionFareResponse>>((accumulator, dayGroup) => {
+    const totals = dayGroup.journeys.reduce((journeyAccumulator, journey) => {
+      journeyAccumulator.totalFareWithNewPrices += journey.totalFare;
+      journeyAccumulator.totalFareExcludingBus += journey.fareExcludingBus;
+      journeyAccumulator.totalFareExcludingMrt += journey.fareExcludingMrt;
+      return journeyAccumulator;
+    }, {
+      totalFareWithNewPrices: 0,
+      totalFareExcludingBus: 0,
+      totalFareExcludingMrt: 0,
+    });
+
+    accumulator[dayGroup.date] = {
+      totalFareWithNewPrices: roundCurrency(totals.totalFareWithNewPrices),
+      totalFareExcludingBus: roundCurrency(totals.totalFareExcludingBus),
+      totalFareExcludingMrt: roundCurrency(totals.totalFareExcludingMrt),
+    };
+    return accumulator;
+  }, {});
+}
+
+export function storeGuestTripSummary(input: {
+  dayGroups: DayGroup[];
+  fares: ConcessionFareResponse;
+}): void {
+  const summary: GuestTripSummary = {
+    dayGroups: input.dayGroups,
+    fares: input.fares,
+    concessionFaresByDate: buildConcessionFaresByDate(input.dayGroups),
+  };
+  sessionStorage.setItem(GUEST_TRIP_SUMMARY_KEY, JSON.stringify(summary));
+}
+
+export function getGuestTripSummary(): GuestTripSummary {
+  const raw = sessionStorage.getItem(GUEST_TRIP_SUMMARY_KEY);
+  if (!raw) {
+    return {
+      dayGroups: [],
+      fares: defaultFares,
+      concessionFaresByDate: {},
+    };
+  }
+
   try {
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw) as GuestTripSummary;
+    return {
+      dayGroups: Array.isArray(parsed.dayGroups) ? parsed.dayGroups : [],
+      fares: parsed.fares ?? defaultFares,
+      concessionFaresByDate: parsed.concessionFaresByDate ?? {},
+    };
   } catch {
-    return [];
+    return {
+      dayGroups: [],
+      fares: defaultFares,
+      concessionFaresByDate: {},
+    };
   }
 }

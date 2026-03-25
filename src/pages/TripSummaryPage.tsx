@@ -43,8 +43,6 @@ const PASS_OPTIONS: ConcessionPass[] = [
 ];
 
 const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
-const SAVINGS_BASELINE_TOOLTIP = 'Comparison baseline: Total cost of "No Pass", which estimates how much you would have spent this month without any concession pass.';
-
 export default function TripSummaryPage() {
   const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
   const { user } = useAuth();
@@ -221,6 +219,7 @@ export default function TripSummaryPage() {
     );
   }, [passComparison]);
   const optimalPassDifference = windowMetrics.paygTotal - bestPass.cost;
+  const savingsBaselineTooltip = `Comparison baseline: Total cost of "No Pass" is $${concessionFares.totalFareWithNewPrices.toFixed(2)}, which estimates how much you would have spent this month without any concession pass.`;
 
   const toggleDay = (date: string) => {
     setExpandedDays(prev => {
@@ -392,7 +391,7 @@ export default function TripSummaryPage() {
                         <span className="text-slate-600 inline-flex items-center gap-2">
                           You would save
                           <Tooltip
-                            title={SAVINGS_BASELINE_TOOLTIP}
+                            title={savingsBaselineTooltip}
                             placement="top"
                             slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
                           >
@@ -414,13 +413,13 @@ export default function TripSummaryPage() {
             </div>
           </div>
 
-          <Card className={`${isMobile ? 'p-4 mb-4' : 'p-6 mb-8'} bg-white border-slate-200`}>
+          <Card className={`${isMobile ? 'p-4 mb-4' : 'p-6 mb-8'} mx-auto bg-white border-slate-200`} style={{ width: '40%' }}>
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-3' : 'text-lg mb-4'}`}>
               Optimal Pass Summary
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center gap-4">
-                <span className="text-slate-600">Actual amount paid</span>
+                <span className="text-slate-600">Your actual amount paid</span>
                 <span className="font-semibold text-slate-900">${windowMetrics.paygTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center gap-4">

@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@mui/material/styles';
+import { useEffect } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import './App.css';
 import AppLayout from './AppLayout';
@@ -6,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import { TripProvider } from './contexts/TripContext';
 import { theme } from './theme';
+import { clearLegacyGuestSessionStorage } from './utils/guestSession';
 
 import ForgetPasswordPage from './pages/ForgetPasswordPage';
 import LoginPage from './pages/LoginPage';
@@ -17,6 +19,10 @@ import TripSummaryPage from './pages/TripSummaryPage';
 import UploadPage from './pages/UploadPage';
 
 function App() {
+  useEffect(() => {
+    clearLegacyGuestSessionStorage();
+  }, []);
+
   const router = createBrowserRouter([
     {
       path: "/",

@@ -1,6 +1,7 @@
 import type { ConcessionFareResponse, DayGroup } from '../types';
 
 const GUEST_TRIP_SUMMARY_KEY = 'guest_trip_summary';
+const LEGACY_DAY_GROUPS_KEY = 'day_groups';
 
 const defaultFares: ConcessionFareResponse = {
   totalFareWithNewPrices: 0,
@@ -14,8 +15,17 @@ export interface GuestTripSummary {
   concessionFaresByDate: Record<string, ConcessionFareResponse>;
 }
 
+function clearLegacyGuestKeys(): void {
+  sessionStorage.removeItem(LEGACY_DAY_GROUPS_KEY);
+}
+
+export function clearLegacyGuestSessionStorage(): void {
+  clearLegacyGuestKeys();
+}
+
 export function clearGuestSession(): void {
   localStorage.removeItem('guest_upload_used');
+  clearLegacyGuestKeys();
   sessionStorage.removeItem(GUEST_TRIP_SUMMARY_KEY);
 }
 
@@ -49,6 +59,7 @@ export function storeGuestTripSummary(input: {
   dayGroups: DayGroup[];
   fares: ConcessionFareResponse;
 }): void {
+  clearLegacyGuestKeys();
   const summary: GuestTripSummary = {
     dayGroups: input.dayGroups,
     fares: input.fares,
@@ -58,6 +69,7 @@ export function storeGuestTripSummary(input: {
 }
 
 export function getGuestTripSummary(): GuestTripSummary {
+  clearLegacyGuestKeys();
   const raw = sessionStorage.getItem(GUEST_TRIP_SUMMARY_KEY);
   if (!raw) {
     return {

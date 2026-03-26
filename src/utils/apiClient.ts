@@ -21,6 +21,31 @@ class ApiClient {
     return {};
   }
 
+  private async parseResponseBody(response: Response): Promise<any> {
+    const rawBody = await response.text();
+    if (!rawBody) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(rawBody);
+    } catch {
+      throw new Error(
+        "The server returned an unexpected response. Please try again shortly."
+      );
+    }
+  }
+
+  private normalizeError(error: unknown): Error {
+    if (error instanceof TypeError) {
+      return new Error("Network error or server is unreachable");
+    }
+    if (error instanceof Error) {
+      return new Error(error.message || "Request failed. Try again later.");
+    }
+    return new Error("Request failed. Try again later.");
+  }
+
   async get(endpoint: string, params?: Record<string, any>): Promise<any> {
     try {
       const authHeader = await this.getAuthHeader();
@@ -41,21 +66,14 @@ class ApiClient {
       const response = await fetch(url, {
         headers: authHeader,
       });
-      const data = await response.json();
+      const data = await this.parseResponseBody(response);
 
       if (!response.ok) {
-        throw new Error(data.message || "Request failed");
+        throw new Error(data?.message || data?.error || "Request failed");
       }
       return data;
     } catch (error) {
-      if (error instanceof TypeError) {
-        throw new Error("Network error or server is unreachable");
-      }
-      if (error instanceof Error) {
-        throw new Error(`Get ${endpoint} failed: ${error.message}`);
-      }
-
-      throw new Error(`An unknown error occurred: ${error}.`);
+      throw this.normalizeError(error);
     }
   }
 
@@ -75,19 +93,14 @@ class ApiClient {
         body: isFormData ? body : JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data = await this.parseResponseBody(res);
 
-      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      if (!res.ok) {
+        throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+      }
       return data;
     } catch (error) {
-      if (error instanceof TypeError) {
-        throw new Error("Network error or server is unreachable");
-      }
-      if (error instanceof Error) {
-        throw new Error(`Get ${endpoint} failed: ${error.message}`);
-      }
-
-      throw new Error(`An unknown error occurred: ${error}.`);
+      throw this.normalizeError(error);
     }
   }
 
@@ -112,20 +125,13 @@ class ApiClient {
         method: "DELETE",
         headers: authHeader,
       });
-      const data = await response.json();
+      const data = await this.parseResponseBody(response);
       if (!response.ok) {
-        throw new Error(data.message || "Request failed");
+        throw new Error(data?.message || data?.error || "Request failed");
       }
       return data;
     } catch (error) {
-      if (error instanceof TypeError) {
-        throw new Error("Network error or server is unreachable");
-      }
-      if (error instanceof Error) {
-        throw new Error(`Get ${endpoint} failed: ${error.message}`);
-      }
-
-      throw new Error(`An unknown error occurred: ${error}.`);
+      throw this.normalizeError(error);
     }
   }
 }

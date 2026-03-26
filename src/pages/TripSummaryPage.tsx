@@ -219,7 +219,6 @@ export default function TripSummaryPage() {
     );
   }, [passComparison]);
   const optimalPassDifference = windowMetrics.paygTotal - bestPass.cost;
-  const savingsBaselineTooltip = `Comparison baseline: Total cost of "No Pass" is $${concessionFares.totalFareWithNewPrices.toFixed(2)}, which estimates how much you would have spent this month without any concession pass.`;
 
   const toggleDay = (date: string) => {
     setExpandedDays(prev => {
@@ -359,6 +358,7 @@ export default function TripSummaryPage() {
                 const isBest = option.pass.id === bestPass.pass.id;
                 // const savings = windowMetrics.paygTotal - option.cost;
                 const savings = concessionFares.totalFareWithNewPrices - option.cost;
+                const savingsBaselineTooltip = `You would ${savings < 0 ? 'lose' : 'save'} $${Math.abs(savings).toFixed(2)} if you bought the ${option.pass.label} as compared to not buying a pass.`;
 
                 return (
                   <Card
@@ -387,21 +387,21 @@ export default function TripSummaryPage() {
                         <span className="text-slate-600">Total Cost</span>
                         <span className="font-semibold text-slate-900">${option.cost.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-xs sm:text-sm">
-                        <span className="text-slate-600 inline-flex items-center gap-2">
-                          You would save
+                      <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+                        <span className="min-w-0 text-slate-600 inline-flex items-center gap-2">
+                          <span className="truncate">You save</span>
                           <Tooltip
                             title={savingsBaselineTooltip}
                             placement="top"
                             slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
                           >
-                            <Info className="w-3.5 h-3.5 text-slate-400" />
+                            <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           </Tooltip>
                         </span>
                         <span
                           className={`font-semibold ${
                             savings > 0 ? 'text-green-600' : savings < 0 ? 'text-red-600' : 'text-slate-900'
-                          }`}
+                          } shrink-0`}
                         >
                           ${savings.toFixed(2)}
                         </span>
@@ -413,7 +413,7 @@ export default function TripSummaryPage() {
             </div>
           </div>
 
-          <Card className={`${isMobile ? 'p-4 mb-4' : 'p-6 mb-8'} mx-auto bg-white border-slate-200`} style={{ width: '40%' }}>
+          <Card className="p-4 md:p-6 mb-4 md:mb-8 w-full md:w-[40%] mx-auto bg-white border-slate-200">
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-3' : 'text-lg mb-4'}`}>
               Optimal Pass Summary
             </h3>
@@ -428,7 +428,7 @@ export default function TripSummaryPage() {
               </div>
               <div className="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
                 <span className="text-slate-600 inline-flex items-end gap-2">
-                  Difference vs optimal pass
+                  Your Spendings vs Optimal Pass
                   <Tooltip
                             title='Might be inaccurate if you bought a concession pass already'
                             placement="top"

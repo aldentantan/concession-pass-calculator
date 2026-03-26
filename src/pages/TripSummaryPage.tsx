@@ -1,9 +1,10 @@
-import { Tooltip } from '@mui/material';
+import { ClickAwayListener, Tooltip } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs, { Dayjs } from 'dayjs';
 import { AlertTriangle, Bus, Calendar, ChevronDown, ChevronUp, Info, Train } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import NoTripsModal from '../components/NoTripsModal';
 import { Button } from '../components/ui/button';
@@ -43,6 +44,63 @@ const PASS_OPTIONS: ConcessionPass[] = [
 ];
 
 const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
+
+function ResponsiveTooltip({
+  title,
+  isMobile,
+  maxWidth = 300,
+  children,
+}: {
+  title: string;
+  isMobile: boolean;
+  maxWidth?: number;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!isMobile) {
+    return (
+      <Tooltip
+        title={title}
+        placement="top"
+        slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth } } }}
+      >
+        <span className="inline-flex">{children}</span>
+      </Tooltip>
+    );
+  }
+
+  return (
+    <ClickAwayListener onClickAway={() => setOpen(false)}>
+      <span className="inline-flex">
+        <Tooltip
+          title={title}
+          placement="top"
+          open={open}
+          onClose={() => setOpen(false)}
+          disableFocusListener
+          disableHoverListener
+          disableTouchListener
+          slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth } } }}
+        >
+          <button
+            type="button"
+            className="inline-flex items-center justify-center"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setOpen((prev) => !prev);
+            }}
+            aria-label="More information"
+          >
+            {children}
+          </button>
+        </Tooltip>
+      </span>
+    </ClickAwayListener>
+  );
+}
+
 export default function TripSummaryPage() {
   const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
   const { user } = useAuth();
@@ -390,13 +448,9 @@ export default function TripSummaryPage() {
                       <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
                         <span className="min-w-0 text-slate-600 inline-flex items-center gap-2">
                           <span className="truncate">You save</span>
-                          <Tooltip
-                            title={savingsBaselineTooltip}
-                            placement="top"
-                            slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
-                          >
+                          <ResponsiveTooltip title={savingsBaselineTooltip} isMobile={isMobile}>
                             <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          </Tooltip>
+                          </ResponsiveTooltip>
                         </span>
                         <span
                           className={`font-semibold ${
@@ -429,13 +483,12 @@ export default function TripSummaryPage() {
               <div className="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
                 <span className="text-slate-600 inline-flex items-end gap-2">
                   Your Spendings vs Optimal Pass
-                  <Tooltip
-                            title='Might be inaccurate if you bought a concession pass already'
-                            placement="top"
-                            slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 300 } } }}
-                          >
-                            <Info className="w-3.5 h-3.5 text-slate-400" />
-                          </Tooltip>
+                  <ResponsiveTooltip
+                    title='Might be inaccurate if you bought a concession pass already'
+                    isMobile={isMobile}
+                  >
+                    <Info className="w-3.5 h-3.5 text-slate-400" />
+                  </ResponsiveTooltip>
                 </span>
                 <span
                   className={`font-semibold ${
@@ -493,11 +546,11 @@ export default function TripSummaryPage() {
                           </div>
                         </div>
                         {hasDayBusStopIssue && (
-                          <Tooltip title={BUS_STOP_ISSUE_TOOLTIP} placement="top" slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 270 }}}}>
+                          <ResponsiveTooltip title={BUS_STOP_ISSUE_TOOLTIP} isMobile={isMobile} maxWidth={270}>
                             <div className="text-amber-600">
                               <AlertTriangle className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
                             </div>
-                          </Tooltip>
+                          </ResponsiveTooltip>
                         )}
                         <div className={`font-semibold text-slate-900 ${isMobile ? 'text-sm' : ''} flex-shrink-0`}>
                           ${dayGroup.totalFare.toFixed(2)}
@@ -541,11 +594,11 @@ export default function TripSummaryPage() {
                                 </div>
                               )}
                               {hasBusStopIssue && (
-                                <Tooltip title={BUS_STOP_ISSUE_TOOLTIP} placement="top" slotProps={{ tooltip: { sx: { textAlign: 'center', maxWidth: 270 }}}}>
+                                <ResponsiveTooltip title={BUS_STOP_ISSUE_TOOLTIP} isMobile={isMobile} maxWidth={270}>
                                   <div className="text-amber-600">
                                     <AlertTriangle className="w-4 h-4" />
                                   </div>
-                                </Tooltip>
+                                </ResponsiveTooltip>
                               )}
                             </div>
                             <div className={`flex-1 ${isMobile ? 'text-xs' : 'text-sm'} text-slate-700`}>

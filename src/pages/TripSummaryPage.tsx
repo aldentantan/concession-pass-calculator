@@ -231,6 +231,12 @@ export default function TripSummaryPage() {
     }
   };
 
+  const handleEndDateChange = (newDate: Dayjs | null) => {
+    if (newDate) {
+      setSelectedEndDate(newDate);
+    }
+  };
+
   // Calculate window metrics from day groups
   const windowMetrics = useMemo(() => {
     const paygTotal = dayGroups.reduce((sum, dayGroup) => sum + dayGroup.totalFare, 0);
@@ -321,9 +327,10 @@ export default function TripSummaryPage() {
             </div>
 
             <div className={isMobile ? '' : 'mb-6'}>
-              <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">End Date (Auto)</label>
+              <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">End Date</label>
               <DatePicker
                 value={selectedEndDate}
+                onChange={handleEndDateChange}
                 format="DD/MM/YYYY"
                 slotProps={{
                   textField: {
@@ -473,12 +480,12 @@ export default function TripSummaryPage() {
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center gap-4">
-                <span className="text-slate-600">Your actual amount paid</span>
+                <span className="text-slate-600">This month, you spent</span>
                 <span className="font-semibold text-slate-900">${windowMetrics.paygTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center gap-4">
                 <span className="text-slate-600">Optimal pass to buy</span>
-                <span className="font-semibold text-slate-900 text-right">{bestPass.pass.label}</span>
+                <span className="font-semibold text-slate-900 text-right">{bestPass.pass.label} (${bestPass.cost.toFixed(2)})</span>
               </div>
               <div className="flex justify-between items-center gap-4 pt-2 border-t border-slate-200">
                 <span className="text-slate-600 inline-flex items-end gap-2">

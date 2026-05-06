@@ -1,4 +1,5 @@
-import { ClickAwayListener, Tooltip } from '@mui/material';
+import { ClickAwayListener, MenuItem, Select, Tooltip } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,35 +14,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
-import type { ConcessionFareResponse, ConcessionPass, DayGroup } from '../types';
+import type { ConcessionFareResponse, DayGroup } from '../types';
 import { getGuestTripSummary } from '../utils/guestSession';
+import { PASS_OPTIONS } from '../utils/passes';
 
-const PASS_OPTIONS: ConcessionPass[] = [
-  {
-    id: 'no-pass',
-    label: 'No Pass',
-    monthlyPrice: 0,
-    description: 'Pay per trip',
-  },
-  {
-    id: 'undergrad-bus',
-    label: 'Undergrad Bus Pass',
-    monthlyPrice: 55.50,
-    description: 'Unlimited bus travel',
-  },
-  {
-    id: 'undergrad-mrt',
-    label: 'Undergrad MRT Pass',
-    monthlyPrice: 48.00,
-    description: 'Unlimited MRT travel',
-  },
-  {
-    id: 'undergrad-hybrid',
-    label: 'Undergrad Hybrid Pass',
-    monthlyPrice: 81.00,
-    description: 'Unlimited bus & MRT',
-  },
-];
+const DEFAULT_PASS_CATEGORY = 'undergrad';
+const PASS_CATEGORY_OPTIONS = Object.keys(PASS_OPTIONS);
+
+function formatPassCategoryLabel(category: string) {
+  return category
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
 
@@ -110,6 +95,7 @@ export default function TripSummaryPage() {
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  const [activePassCategory, setActivePassCategory] = useState(DEFAULT_PASS_CATEGORY);
   const [concessionFares, setConcessionFares] = useState<ConcessionFareResponse>({
     totalFareWithNewPrices: 0,
     totalFareExcludingBus: 0,
@@ -237,6 +223,10 @@ export default function TripSummaryPage() {
     }
   };
 
+  const handlePassCategoryChange = (event: SelectChangeEvent) => {
+    setActivePassCategory(event.target.value);
+  };
+
   // Calculate window metrics from day groups
   const windowMetrics = useMemo(() => {
     const paygTotal = dayGroups.reduce((sum, dayGroup) => sum + dayGroup.totalFare, 0);
@@ -252,15 +242,17 @@ export default function TripSummaryPage() {
   }, [dayGroups]);
   // Calculate pass comparison
   const passComparison = useMemo(() => {
-    return PASS_OPTIONS.map(pass => {
+    const activePassOptions = PASS_OPTIONS[activePassCategory] ?? PASS_OPTIONS[DEFAULT_PASS_CATEGORY];
+
+    return activePassOptions.map(pass => {
       let totalCost: number;
       const paygTotal = windowMetrics.paygTotal;
 
       if (pass.id === 'no-pass') {
         totalCost = concessionFares.totalFareWithNewPrices;
-      } else if (pass.id === 'undergrad-mrt') {
+      } else if (pass.id.endsWith('-mrt')) {
         totalCost = pass.monthlyPrice + concessionFares.totalFareExcludingMrt;
-      } else if (pass.id === 'undergrad-bus') {
+      } else if (pass.id.endsWith('-bus')) {
         totalCost = pass.monthlyPrice + concessionFares.totalFareExcludingBus;
       } else {
         totalCost = pass.monthlyPrice;
@@ -275,7 +267,7 @@ export default function TripSummaryPage() {
         isSavingMoney: savings > 0,
       };
     });
-  }, [windowMetrics, concessionFares]);
+  }, [activePassCategory, windowMetrics, concessionFares]);
 
   const bestPass = useMemo(() => {
     return passComparison.reduce((best, current) =>
@@ -306,11 +298,24 @@ export default function TripSummaryPage() {
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-0.5' : 'text-lg mb-1'}`}>
               Analysis Controls
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600">Configure your date range</p>
+            <p className="text-xs sm:text-sm text-slate-600">Choose date range and pass type</p>
           </div>
+          <Select
+            value={activePassCategory}
+            onChange={handlePassCategoryChange}
+            size="small"
+            fullWidth
+            className={isMobile ? 'mb-3' : 'mb-6'}
+          >
+            {PASS_CATEGORY_OPTIONS.map((category) => (
+              <MenuItem key={category} value={category}>
+                {formatPassCategoryLabel(category)}
+              </MenuItem>
+            ))}
+          </Select>
 
           {/* Date Picker */}
-          <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'gap-6'}`}>
+          <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'gap-0'}`}>
             <div className={isMobile ? '' : 'mb-6'}>
               <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-2">Start Date</label>
               <DatePicker

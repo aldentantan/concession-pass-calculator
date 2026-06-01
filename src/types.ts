@@ -56,6 +56,10 @@ export interface ConcessionFareResponse { // The JSON object returned from backe
   totalFareExcludingMrt: number;
 }
 
+export type UploadCommuterCategory = 'adult' | 'undergrad' | 'student';
+
+export type FareCommuterType = 'adult' | 'student';
+
 export interface ConcessionPass {
   id: string;
   label: string;

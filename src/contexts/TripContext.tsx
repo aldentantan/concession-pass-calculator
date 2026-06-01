@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
-import type { ConcessionFareResponse, DayGroup, Statement } from '../types';
+import type { ConcessionFareResponse, DayGroup, Statement, UploadCommuterCategory } from '../types';
 
 interface TripContextType {
   dayGroups: DayGroup[];
@@ -9,12 +9,14 @@ interface TripContextType {
   currTripsLoaded: Boolean;
   lastFetchedKey: string | null;
   cachedConcessionFares: ConcessionFareResponse | null;
+  commuterCategory: UploadCommuterCategory | null;
   setDayGroups: (dayGroups: DayGroup[]) => void;
   setFares: (fares: ConcessionFareResponse) => void;
   setContextStatements: (statements: Statement[]) => void;
   setCurrTripsLoaded: (loaded: Boolean) => void;
   setLastFetchedKey: (key: string | null) => void;
   setCachedConcessionFares: (fares: ConcessionFareResponse | null) => void;
+  setCommuterCategory: (commuterCategory: UploadCommuterCategory | null) => void;
   clearData: () => void;
 }
 
@@ -33,11 +35,13 @@ export function TripProvider({ children }: { children: ReactNode }) {
   const [currTripsLoaded, setCurrTripsLoaded] = useState<Boolean>(false);
   const [lastFetchedKey, setLastFetchedKey] = useState<string | null>(null);
   const [cachedConcessionFares, setCachedConcessionFares] = useState<ConcessionFareResponse | null>(null);
+  const [commuterCategory, setCommuterCategory] = useState<UploadCommuterCategory | null>(null);
 
   const clearData = () => {
     setDayGroups([]);
     setFares(defaultFares);
     setContextStatements([]);
+    setCommuterCategory(null);
   };
 
   return (
@@ -48,12 +52,14 @@ export function TripProvider({ children }: { children: ReactNode }) {
       currTripsLoaded,
       lastFetchedKey,
       cachedConcessionFares,
+      commuterCategory,
       setDayGroups,
       setFares,
       setContextStatements,
       setCurrTripsLoaded,
       setLastFetchedKey,
       setCachedConcessionFares,
+      setCommuterCategory,
       clearData,
     }}>
       {children}

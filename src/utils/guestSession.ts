@@ -1,4 +1,5 @@
-import type { ConcessionFareResponse, DayGroup } from '../types';
+import type { ConcessionFareResponse, DayGroup, UploadCommuterCategory } from '../types';
+import { isUploadCommuterCategory } from './commuterCategory';
 
 const GUEST_TRIP_SUMMARY_KEY = 'guest_trip_summary';
 const LEGACY_DAY_GROUPS_KEY = 'day_groups';
@@ -13,6 +14,7 @@ export interface GuestTripSummary {
   dayGroups: DayGroup[];
   fares: ConcessionFareResponse;
   concessionFaresByDate: Record<string, ConcessionFareResponse>;
+  commuterCategory: UploadCommuterCategory | null;
 }
 
 function clearLegacyGuestKeys(): void {
@@ -58,12 +60,14 @@ function buildConcessionFaresByDate(dayGroups: DayGroup[]): Record<string, Conce
 export function storeGuestTripSummary(input: {
   dayGroups: DayGroup[];
   fares: ConcessionFareResponse;
+  commuterCategory: UploadCommuterCategory;
 }): void {
   clearLegacyGuestKeys();
   const summary: GuestTripSummary = {
     dayGroups: input.dayGroups,
     fares: input.fares,
     concessionFaresByDate: buildConcessionFaresByDate(input.dayGroups),
+    commuterCategory: input.commuterCategory,
   };
   sessionStorage.setItem(GUEST_TRIP_SUMMARY_KEY, JSON.stringify(summary));
 }
@@ -76,6 +80,7 @@ export function getGuestTripSummary(): GuestTripSummary {
       dayGroups: [],
       fares: defaultFares,
       concessionFaresByDate: {},
+      commuterCategory: null,
     };
   }
 
@@ -85,12 +90,16 @@ export function getGuestTripSummary(): GuestTripSummary {
       dayGroups: Array.isArray(parsed.dayGroups) ? parsed.dayGroups : [],
       fares: parsed.fares ?? defaultFares,
       concessionFaresByDate: parsed.concessionFaresByDate ?? {},
+      commuterCategory: isUploadCommuterCategory(parsed.commuterCategory)
+        ? parsed.commuterCategory
+        : null,
     };
   } catch {
     return {
       dayGroups: [],
       fares: defaultFares,
       concessionFaresByDate: {},
+      commuterCategory: null,
     };
   }
 }

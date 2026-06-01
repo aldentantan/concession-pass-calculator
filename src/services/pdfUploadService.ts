@@ -1,16 +1,18 @@
 import { apiClient } from "../utils/apiClient";
+import type { FareCommuterType } from "../types";
 
 /**
  * Upload and process a PDF as a guest user.
  * The file is sent directly to the backend — no Supabase Storage or DB involvement.
  */
-export async function uploadAndProcessPdfAsGuest(file: File) {
+export async function uploadAndProcessPdfAsGuest(file: File, commuterType: FareCommuterType) {
   if (!file) {
     throw new Error("No file provided for upload");
   }
 
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("commuterType", commuterType);
 
   const result = await apiClient.post("/statements/process-guest", formData);
 
@@ -20,13 +22,14 @@ export async function uploadAndProcessPdfAsGuest(file: File) {
   };
 }
 
-export async function uploadAndProcessPdf(file: File) {
+export async function uploadAndProcessPdf(file: File, commuterType: FareCommuterType) {
   if (!file) {
     throw new Error("No file provided for upload");
   }
 
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("commuterType", commuterType);
 
   try {
     // Backend does everything: upload → parse → calculate → insert

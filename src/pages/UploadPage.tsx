@@ -1,5 +1,6 @@
 
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
 import { AlertCircle, Calculator, FileText, HelpCircle, Shield, TrendingUp, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,19 +11,22 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { uploadAndProcessPdf, uploadAndProcessPdfAsGuest } from '../services/pdfUploadService';
+import type { UploadCommuterCategory } from '../types';
+import { COMMUTER_CATEGORY_OPTIONS, getFareCommuterType, isUploadCommuterCategory } from '../utils/commuterCategory';
 import { storeGuestTripSummary } from '../utils/guestSession';
 
 export default function UploadPage() {
   const { user } = useAuth();
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedCommuterCategory, setSelectedCommuterCategory] = useState<UploadCommuterCategory | ''>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
 
-  const { setDayGroups, setFares, setCurrTripsLoaded } = useTripContext();
+  const { setDayGroups, setFares, setCurrTripsLoaded, setCommuterCategory } = useTripContext();
   const navigate = useNavigate();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -56,20 +60,33 @@ export default function UploadPage() {
     }
   };
 
+  const handleCommuterCategoryChange = (event: SelectChangeEvent) => {
+    const value = event.target.value;
+    if (isUploadCommuterCategory(value)) {
+      setSelectedCommuterCategory(value);
+      setError(null);
+    }
+  };
+
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile || !selectedCommuterCategory) {
+      setError('Select a commuter type before uploading your PDF.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
     try {
+      const fareCommuterType = getFareCommuterType(selectedCommuterCategory);
       const { journeys: dayGroups, fares } = user
-        ? await uploadAndProcessPdf(selectedFile)
-        : await uploadAndProcessPdfAsGuest(selectedFile);
+        ? await uploadAndProcessPdf(selectedFile, fareCommuterType)
+        : await uploadAndProcessPdfAsGuest(selectedFile, fareCommuterType);
       setDayGroups(dayGroups);
       setFares(fares);
       setCurrTripsLoaded(false);
+      setCommuterCategory(selectedCommuterCategory);
       if (!user) {
-        storeGuestTripSummary({ dayGroups, fares });
+        storeGuestTripSummary({ dayGroups, fares, commuterCategory: selectedCommuterCategory });
       }
       navigate('/trip-summary');
     } catch (err) {
@@ -179,10 +196,30 @@ export default function UploadPage() {
             </div>
           </div>
 
+          <div className={`${isMobile ? 'mt-4' : 'mt-6'} max-w-sm mx-auto`}>
+            <FormControl fullWidth size="small" required>
+              <InputLabel id="commuter-type-label">Commuter type</InputLabel>
+              <Select
+                labelId="commuter-type-label"
+                value={selectedCommuterCategory}
+                label="Commuter type"
+                onChange={handleCommuterCategoryChange}
+                disabled={loading}
+              >
+                {COMMUTER_CATEGORY_OPTIONS.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              <FormHelperText>Required for accurate fare and pass recommendations</FormHelperText>
+            </FormControl>
+          </div>
+
           <div className={`${isMobile ? 'mt-4' : 'mt-6'} flex justify-center`}>
             <Button
               onClick={handleUpload}
-              disabled={!selectedFile || loading}
+              disabled={!selectedFile || !selectedCommuterCategory || loading}
               size={isMobile ? 'md' : 'lg'}
               className={isMobile ? 'px-6 w-full sm:w-auto' : 'px-10'}
             >

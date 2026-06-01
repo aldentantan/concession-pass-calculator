@@ -1,5 +1,6 @@
 import { apiClient } from "../utils/apiClient";
 import { supabase } from "../supabase";
+import type { FareCommuterType } from "../types";
 
 export async function fetchStatements() {
   const {
@@ -31,7 +32,11 @@ export async function reanalyseStatement(statementId: string) {
   return response;
 }
 
-export async function fetchTripsInDateRange(startDate: string, endDate: string) {
+export async function fetchTripsInDateRange(
+  startDate: string,
+  endDate: string,
+  commuterType: FareCommuterType = "adult"
+) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -41,6 +46,7 @@ export async function fetchTripsInDateRange(startDate: string, endDate: string) 
     userId,
     startDate,
     endDate,
+    commuterType,
   });
 
   return response;

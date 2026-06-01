@@ -1,5 +1,4 @@
-import { ClickAwayListener, MenuItem, Select, Tooltip } from '@mui/material';
-import type { SelectChangeEvent } from '@mui/material/Select';
+import { ClickAwayListener, Tooltip } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -15,18 +14,11 @@ import { useTripContext } from '../contexts/TripContext';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchTripsInDateRange } from '../services/statementsService';
 import type { ConcessionFareResponse, DayGroup } from '../types';
+import { getDefaultPassCategory, getFareCommuterType } from '../utils/commuterCategory';
 import { getGuestTripSummary } from '../utils/guestSession';
 import { PASS_OPTIONS } from '../utils/passes';
 
 const DEFAULT_PASS_CATEGORY = 'undergrad';
-const PASS_CATEGORY_OPTIONS = Object.keys(PASS_OPTIONS);
-
-function formatPassCategoryLabel(category: string) {
-  return category
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
 
 const BUS_STOP_ISSUE_TOOLTIP = 'Some bus trips were not accounted for because bus stop names could not be matched.';
 
@@ -87,15 +79,20 @@ function ResponsiveTooltip({
 }
 
 export default function TripSummaryPage() {
-  const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares } = useTripContext();
+  const { dayGroups, setDayGroups, currTripsLoaded, setCurrTripsLoaded, lastFetchedKey, setLastFetchedKey, cachedConcessionFares, setCachedConcessionFares, commuterCategory } = useTripContext();
   const { user } = useAuth();
   const guestTripSummary = user ? null : getGuestTripSummary();
+  const activeCommuterCategory = commuterCategory ?? guestTripSummary?.commuterCategory ?? null;
+  const defaultPassCategory = getDefaultPassCategory(activeCommuterCategory);
+  const activePassCategory = defaultPassCategory;
+  const fareCommuterType = activeCommuterCategory
+    ? getFareCommuterType(activeCommuterCategory)
+    : 'adult';
   const isMobile = useIsMobile();
   const [selectedStartDate, setSelectedStartDate] = useState<Dayjs | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Dayjs | null>(null);
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
-  const [activePassCategory, setActivePassCategory] = useState(DEFAULT_PASS_CATEGORY);
   const [concessionFares, setConcessionFares] = useState<ConcessionFareResponse>({
     totalFareWithNewPrices: 0,
     totalFareExcludingBus: 0,
@@ -134,7 +131,8 @@ export default function TripSummaryPage() {
         // Authenticated: fetch from backend (DB-persisted data)
         const response = await fetchTripsInDateRange(
           selectedStartDate.format('YYYY-MM-DD'),
-          selectedEndDate.format('YYYY-MM-DD')
+          selectedEndDate.format('YYYY-MM-DD'),
+          fareCommuterType
         );
         const dayGroupsResult = response.dayGroups || [];
         const concessionFaresResult = response.concessionFares || {
@@ -142,7 +140,7 @@ export default function TripSummaryPage() {
           totalFareExcludingBus: 0,
           totalFareExcludingMrt: 0,
         };
-        const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}`;
+        const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}_${fareCommuterType}`;
         setDayGroups(dayGroupsResult);
         setConcessionFares(concessionFaresResult);
         setLastFetchedKey(fetchKey);
@@ -197,7 +195,7 @@ export default function TripSummaryPage() {
     if (!selectedStartDate || !selectedEndDate || loadingTrips || hasInitiallyLoaded) return;
 
     if (user && currTripsLoaded) {
-      const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}`;
+      const fetchKey = `${selectedStartDate.format('YYYY-MM-DD')}_${selectedEndDate.format('YYYY-MM-DD')}_${fareCommuterType}`;
       if (lastFetchedKey === fetchKey && dayGroups.length > 0 && cachedConcessionFares) {
         setConcessionFares(cachedConcessionFares);
         setHasInitiallyLoaded(true);
@@ -207,7 +205,7 @@ export default function TripSummaryPage() {
 
     loadWindowTrips();
     setHasInitiallyLoaded(true);
-  }, [selectedStartDate, selectedEndDate]);
+  }, [selectedStartDate, selectedEndDate, fareCommuterType]);
 
   // Handle start date change
   const handleStartDateChange = (newDate: Dayjs | null) => {
@@ -221,10 +219,6 @@ export default function TripSummaryPage() {
     if (newDate) {
       setSelectedEndDate(newDate);
     }
-  };
-
-  const handlePassCategoryChange = (event: SelectChangeEvent) => {
-    setActivePassCategory(event.target.value);
   };
 
   // Calculate window metrics from day groups
@@ -298,21 +292,8 @@ export default function TripSummaryPage() {
             <h3 className={`font-semibold text-slate-900 ${isMobile ? 'text-base mb-0.5' : 'text-lg mb-1'}`}>
               Analysis Controls
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600">Choose date range and pass type</p>
+            <p className="text-xs sm:text-sm text-slate-600">Choose date range</p>
           </div>
-          <Select
-            value={activePassCategory}
-            onChange={handlePassCategoryChange}
-            size="small"
-            fullWidth
-            className={isMobile ? 'mb-3' : 'mb-6'}
-          >
-            {PASS_CATEGORY_OPTIONS.map((category) => (
-              <MenuItem key={category} value={category}>
-                {formatPassCategoryLabel(category)}
-              </MenuItem>
-            ))}
-          </Select>
 
           {/* Date Picker */}
           <div className={`grid ${isMobile ? 'grid-cols-2 gap-3' : 'gap-0'}`}>
@@ -496,7 +477,7 @@ export default function TripSummaryPage() {
                 <span className="text-slate-600 inline-flex items-end gap-2">
                   Your Spendings vs Optimal Pass
                   <ResponsiveTooltip
-                    title='Might be inaccurate if you bought a concession pass already'
+                    title='Slight rounding differences may result in small discrepancies between this and the "You save" value on the optimal pass card above. Please take this as a reference rather than an exact figure.'
                     isMobile={isMobile}
                   >
                     <Info className="w-3.5 h-3.5 text-slate-400" />

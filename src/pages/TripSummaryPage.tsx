@@ -466,7 +466,7 @@ export default function TripSummaryPage() {
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center gap-4">
-                <span className="text-slate-600">This month, you spent</span>
+                <span className="text-slate-600">From this month's PDF report, you spent</span>
                 <span className="font-semibold text-slate-900">${windowMetrics.paygTotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center gap-4">

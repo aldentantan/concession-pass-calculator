@@ -18,7 +18,16 @@ export function getFareCommuterType(
 export function getDefaultPassCategory(
   commuterCategory: UploadCommuterCategory | null,
 ): string {
-  return commuterCategory === 'adult' ? 'adult' : 'undergrad';
+  switch (commuterCategory) {
+    case 'adult':
+      return 'adult';
+    case 'student':
+      return 'primary-sch-student';
+    case 'undergrad':
+      return 'undergrad';
+    default:
+      return 'adult'
+  }
 }
 
 export function isUploadCommuterCategory(

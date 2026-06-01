@@ -43,6 +43,8 @@ export interface Journey {
     endLocation: string;
     trips: Trip[];
     tripIssues: TripIssue[];
+    fareSource: 'statement' | 'pass_usage';
+    statementFare: number | null;
     mrtDistance: number;
     busDistance: number;
     fareExcludingBus: number;

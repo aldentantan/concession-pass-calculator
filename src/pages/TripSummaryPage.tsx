@@ -477,7 +477,7 @@ export default function TripSummaryPage() {
                 <span className="text-slate-600 inline-flex items-end gap-2">
                   Your Spendings vs Optimal Pass
                   <ResponsiveTooltip
-                    title='Slight rounding differences may result in small discrepancies between this and the "You save" value on the optimal pass card above. Please take this as a reference rather than an exact figure.'
+                    title='There may be discrepancies in this calculation if you have bought a concession pass in your uploaded PDF. Please take this as a reference rather than an exact figure.'
                     isMobile={isMobile}
                   >
                     <Info className="w-3.5 h-3.5 text-slate-400" />

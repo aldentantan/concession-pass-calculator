@@ -510,13 +510,14 @@ export default function TripSummaryPage() {
             <div className="space-y-3">
               {dayGroups.map((dayGroup) => {
                 const isExpanded = expandedDays.has(dayGroup.date);
-                const tripsWithIssueState = dayGroup.journeys.flatMap((journey) =>
-                  journey.trips.map((trip, tripIndex) => ({
-                    trip,
-                    hasBusStopIssue: journey.tripIssues.some(
-                      (issue) => issue.code === 'BUS_STOP_NOT_FOUND' && issue.tripIndex === tripIndex
-                    ),
-                  }))
+                const tripCount = dayGroup.journeys.reduce(
+                  (total, journey) => total + journey.trips.length,
+                  0
+                );
+                const lastJourneyWithTripsIndex = dayGroup.journeys.reduce(
+                  (lastIndex, journey, journeyIndex) =>
+                    journey.trips.length > 0 ? journeyIndex : lastIndex,
+                  -1
                 );
                 const hasDayBusStopIssue = dayGroup.tripIssues.some((issue) => issue.code === 'BUS_STOP_NOT_FOUND');
 
@@ -535,7 +536,7 @@ export default function TripSummaryPage() {
                           </div>
                           <div className={`text-slate-600 ${isMobile ? 'text-xs' : 'text-sm'}`}>
                             {dayGroup.journeys.length} journey{dayGroup.journeys.length !== 1 ? 's' : ''} ◦{' '}
-                            {tripsWithIssueState.length} trip{tripsWithIssueState.length !== 1 ? 's' : ''}
+                            {tripCount} trip{tripCount !== 1 ? 's' : ''}
                           </div>
                         </div>
                         {hasDayBusStopIssue && (
@@ -558,48 +559,61 @@ export default function TripSummaryPage() {
 
                     {/* Expanded Trip Details */}
                     {isExpanded && (
-                      <div className="border-t border-slate-200 bg-slate-50">
-                        {tripsWithIssueState.map(({ trip, hasBusStopIssue }, index) => (
-                          <div
-                            key={index}
-                            className={`${isMobile ? 'p-3' : 'p-4'} border-b border-slate-200 last:border-b-0 ${isMobile ? 'space-y-2' : 'flex items-center gap-4'}`}
-                          >
-                            <div className={isMobile ? 'flex items-center justify-between' : ''}>
-                              <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-slate-600`}>
-                                {trip.time}
-                              </div>
-                              {isMobile && (
-                                <div className="font-semibold text-slate-900 text-sm">
-                                  ${trip.fare.toFixed(2)}
-                                </div>
-                              )}
-                            </div>
-                            <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 w-28'}`}>
-                              {trip.type === 'bus' ? (
-                                <div className={`flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                  <Bus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
-                                  <span className="text-blue-900 font-medium">Bus {trip.busService}</span>
-                                </div>
-                              ) : (
-                                <div className={`flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                  <Train className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
-                                  <span className="text-green-900 font-medium">MRT</span>
-                                </div>
-                              )}
-                              {hasBusStopIssue && (
-                                <ResponsiveTooltip title={BUS_STOP_ISSUE_TOOLTIP} isMobile={isMobile} maxWidth={270}>
-                                  <div className="text-amber-600">
-                                    <AlertTriangle className="w-4 h-4" />
+                      <div className="border-t border-slate-200 bg-white">
+                        {dayGroup.journeys.map((journey, journeyIndex) => (
+                          <div key={journeyIndex}>
+                            {journey.trips.map((trip, tripIndex) => {
+                              const hasBusStopIssue = journey.tripIssues.some(
+                                (issue) => issue.code === 'BUS_STOP_NOT_FOUND' && issue.tripIndex === tripIndex
+                              );
+                              const isLastTripInDay =
+                                journeyIndex === lastJourneyWithTripsIndex && tripIndex === journey.trips.length - 1;
+                              const journeyBackground = journeyIndex % 2 === 0 ? 'bg-blue-50' : 'bg-white';
+
+                              return (
+                                <div
+                                  key={tripIndex}
+                                  className={`${journeyBackground} ${isMobile ? 'p-3' : 'p-4'} border-b border-slate-200 ${isLastTripInDay ? 'border-b-0' : ''} ${isMobile ? 'space-y-2' : 'flex items-center gap-4'}`}
+                                >
+                                  <div className={isMobile ? 'flex items-center justify-between' : ''}>
+                                    <div className={`${isMobile ? 'text-xs' : 'text-sm'} text-slate-600`}>
+                                      {trip.time}
+                                    </div>
+                                    {isMobile && (
+                                      <div className="font-semibold text-slate-900 text-sm">
+                                        ${trip.fare.toFixed(2)}
+                                      </div>
+                                    )}
                                   </div>
-                                </ResponsiveTooltip>
-                              )}
-                            </div>
-                            <div className={`flex-1 ${isMobile ? 'text-xs' : 'text-sm'} text-slate-700`}>
-                              {trip.startLocation} → {trip.endLocation}
-                            </div>
-                            {!isMobile && (
-                              <div className="font-semibold text-slate-900">${trip.fare.toFixed(2)}</div>
-                            )}
+                                  <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 w-28'}`}>
+                                    {trip.type === 'bus' ? (
+                                      <div className={`flex items-center gap-1.5 px-2 py-1 bg-blue-100 rounded ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        <Bus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                                        <span className="text-blue-900 font-medium">Bus {trip.busService}</span>
+                                      </div>
+                                    ) : (
+                                      <div className={`flex items-center gap-1.5 px-2 py-1 bg-green-100 rounded ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                                        <Train className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />
+                                        <span className="text-green-900 font-medium">MRT</span>
+                                      </div>
+                                    )}
+                                    {hasBusStopIssue && (
+                                      <ResponsiveTooltip title={BUS_STOP_ISSUE_TOOLTIP} isMobile={isMobile} maxWidth={270}>
+                                        <div className="text-amber-600">
+                                          <AlertTriangle className="w-4 h-4" />
+                                        </div>
+                                      </ResponsiveTooltip>
+                                    )}
+                                  </div>
+                                  <div className={`flex-1 ${isMobile ? 'text-xs' : 'text-sm'} text-slate-700`}>
+                                    {trip.startLocation} → {trip.endLocation}
+                                  </div>
+                                  {!isMobile && (
+                                    <div className="font-semibold text-slate-900">${trip.fare.toFixed(2)}</div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         ))}
                       </div>
